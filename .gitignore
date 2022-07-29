@@ -128,6 +128,12 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# IDE and Editor
+.idea/
+
 
 # config 및 데이터 관련
 config.py
+
+# 테스트 파일
+test.py
