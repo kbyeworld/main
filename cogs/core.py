@@ -7,7 +7,7 @@ from discord.ext import commands
 from utils.embed import Embed
 
 
-class core(commands.Cog):
+class Core(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
