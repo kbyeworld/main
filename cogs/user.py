@@ -78,7 +78,7 @@ class User(commands.Cog):
     @commands.slash_command(
         name="투표인증",
         description="K-BYEWORLD의 투표를 인증하여 보상을 받습니다.",
-        checks=[not_account_check],
+        checks=[account_check],
     )
     async def user_votecheck(self, ctx):
         await ctx.defer(ephemeral=True)
