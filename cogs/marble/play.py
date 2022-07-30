@@ -165,7 +165,6 @@ class marble_play(commands.Cog):
                 await send_response(
                     interaction, content=f"참가 처리가 완료되었어요.", ephemeral=True
                 )
-                await game_thread.purge(limit=1)
                 self.join.append(interaction.user.id)
 
                 if len(game_data["players"]) == 3:
