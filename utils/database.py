@@ -62,6 +62,23 @@ class UserDatabase:
         await client.users.update_one({"user_id": user_id, "deleted": False}, {'$set': {"deleted": True, "deleted_at": datetime.datetime.now()}})
         return {'success': True, 'result': '탈퇴를 완료했습니다. 30일 후 재가입이 가능합니다.'}
 
+    class money:
+        async def add(user_id: int, money: str):
+            """
+            user_id (int) - 필수, 디스코드 유저 ID 입력
+            money (int) - 필수, 추가할 돈 입력
+            """
+            try:
+                user = await UserDatabase.find(user_id)
+                if user != None:
+                    await client.users.update_one(
+                        {"user_id": user_id, "deleted": False}, {"$set": {"money": str(int(user['money']))+int(money))}}
+                    )
+                    return {"success": True}
+                return {"success": False, "result": "유저를 찾을 수 없습니다."}
+            except Exception as error:
+                return {"success": False, "result": error}
+
     class mail:
         async def add(user_id: int, mail: dict):
             """
