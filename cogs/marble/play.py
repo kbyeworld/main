@@ -1,6 +1,7 @@
 import datetime
 import json
 import logging
+import shutil
 
 import discord
 from discord.commands import Option
@@ -164,12 +165,14 @@ class marble_play(commands.Cog):
                 await send_response(
                     interaction, content=f"참가 처리가 완료되었어요.", ephemeral=True
                 )
+                await game_thread.purge(limit=1)
                 self.join.append(interaction.user.id)
 
                 if len(game_data["players"]) == 3:
                     await game_thread.send("게임 시작 가능 인원인 3명이 모였습니다! 게임을 시작합니다.")
+                    shutil.copyfile("./data/province.json", f"./data/game/{game_thread.id}.json")
                     await (await interaction.channel.fetch_message(int(game_data["channel_id"]))).edit(embed=Embed.user_footer(Embed.default(timestamp=datetime.datetime.now(), title="▶️ 게임 시작", description="게임 최대 인원 3명이 모여 게임을 자동 시작합니다."),interaction.user), view=None)
-                    await marble_game(interaction)
+                    await marble_game(interaction, players = game_data["players"])
 
 def setup(bot):
     bot.add_cog(marble_play(bot))
