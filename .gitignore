@@ -134,6 +134,7 @@ dmypy.json
 
 # config 및 데이터 관련
 config.py
+data/
 
 # 테스트 파일
 test.py
