@@ -1,11 +1,12 @@
 import datetime
 import logging
+import asyncio
 
 import discord
 from discord.ext import commands
 
 from utils.embed import Embed
-
+from utils.database import UserDatabase
 
 class Listener(commands.Cog):
     def __init__(self, bot):
@@ -19,9 +20,36 @@ class Listener(commands.Cog):
     @commands.Cog.listener()
     async def on_application_command(self, ctx):
         self.logger.info(f"💻 {ctx.author}({ctx.author.id}) - '/{ctx.command}' 명령어 사용")
+        user = await UserDatabase.find(ctx.author.id)
+                if user != None:
+            if (
+                user["mail_last_notify"] == None
+                or user["mail_last_notify"] + datetime.timedelta(hours=24)
+                <= datetime.datetime.now()
+            ):
+                result = await UserDatabase.mail.list(ctx.author.id, False)
+                print(result)
+                if result["error"] == False:
+                    if len(result["mail_list"]) > 0:
+                        await asyncio.sleep(0.5)
+                        content = f"{ctx.author.mention}, 읽지 않은 메일이 ``{len(result['mail_list'])}개`` 있습니다.\n``/메일 확인 필터: 읽지 않은 메일`` 명령어를 사용하여 메일을 확인하세요.\n\n> 메일을 읽지 않을 시, 24시간 후 다시 알림을 보내드려요."
+                        try:
+                            await ctx.respond(
+                                content=content,
+                                ephemeral=True,
+                            )
+                        except:
+                            await ctx.send(
+                                content=content,
+                            )
+                        await UserDatabase.mail.last_notify(
+                            ctx.author.id, datetime.datetime.now()
+                        )
 
-    @commands.Cog.listener()
-    async def on_application_command_error(self, ctx, error):
+    @commands.Cog.listener('on_application_command_error')
+    @commands.Cog.listener('on_command_error')
+    @commands.Cog.listener('on_error')
+    async def error(self, ctx, error):
         try:
             error = error.original
         except:
