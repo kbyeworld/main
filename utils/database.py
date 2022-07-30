@@ -40,7 +40,7 @@ class UserDatabase:
                 "mail": [
                     {
                         "title": f"K-BYEWORLD 서비스 가입을 축하드립니다! :tada:",
-                        "description": f"기본 지원금으로 5천만원이 추가되었습니다!\n\n:question: __더 궁금하신 사항이 있으신가요?__\n[깃허브에서 이슈로 남겨주세요!](https://github.com/kbyeworld/main)",
+                        "description": f"기본 지원금으로 5천만원이 추가되었습니다!\n\n:question: __더 궁금하신 사항이 있으신가요?__\n> [깃허브에서 이슈로 남겨주세요!](https://github.com/kbyeworld/main)",
                         "image": None,
                         "date": datetime.datetime.now(),
                         "sender": 1000553177051037697,
