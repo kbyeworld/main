@@ -1,3 +1,4 @@
+import logging
 import discord
 from discord.ext import commands
 
@@ -8,7 +9,7 @@ from utils.embed import Embed
 class Listener(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.logger = bot.logger
+        self.logger = logging.getLogger("kbyeworld")
 
     @commands.Cog.listener()
     async def on_ready(self):
