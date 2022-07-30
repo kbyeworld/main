@@ -15,14 +15,8 @@ class marble_play(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.logger = logging.getLogger("kbyeworld")
-
-        print("HELLO")
-
-        with open("./data/game.json", encoding="utf-8", mode="r") as f:
-            mydict = json.loads(f.read())
-        print(mydict)
+        mydict = loadjson("./data/game.json")
         self.join = [member for dic in mydict for member in mydict[dic]["players"]]
-        print(self.join)
 
     @commands.slash_command(name="시작", description="마블 게임을 시작합니다.")
     @commands.max_concurrency(1, commands.BucketType.user)
@@ -94,8 +88,7 @@ class marble_play(commands.Cog):
                 user_id = interaction.custom_id.replace("marble_", "").replace(
                     "_join", ""
                 )
-                with open("./data/game.json", encoding="utf-8", mode="r") as f:
-                    mydict = json.loads(f.read())
+                mydict = loadjson("./data/game.json")
                 try:
                     game_data = mydict[user_id]
                     game_thread = interaction.guild.get_thread(int(game_data["channel_id"]))
@@ -152,6 +145,10 @@ class marble_play(commands.Cog):
                     interaction, content=f"참가 처리가 완료되었어요.", ephemeral=True
                 )
                 self.join.append(interaction.user.id)
+
+                if len(game_data["players"]) == 3:
+                    await game_thread.send("게임 시작 가능 인원인 3명이 모였습니다! 게임을 시작합니다.")
+                    await (await interaction.channel.fetch_message(int(game_data["channel_id"]))).edit(embed=Embed.user_footer(Embed.default(timestamp=datetime.datetime.now(), title="▶️ 게임 시작", description="게임 최대 인원 3명이 모여 게임을 자동 시작합니다."),interaction.user), view=None)
 
 
 def setup(bot):
