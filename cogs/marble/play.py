@@ -10,7 +10,7 @@ from utils.embed import Embed
 from utils.database import UserDatabase
 from utils.json_util import loadjson, savejson
 from utils.respond import send_response
-
+from utils.game import marble_game
 
 class marble_play(commands.Cog):
     def __init__(self, bot):
@@ -169,7 +169,7 @@ class marble_play(commands.Cog):
                 if len(game_data["players"]) == 3:
                     await game_thread.send("게임 시작 가능 인원인 3명이 모였습니다! 게임을 시작합니다.")
                     await (await interaction.channel.fetch_message(int(game_data["channel_id"]))).edit(embed=Embed.user_footer(Embed.default(timestamp=datetime.datetime.now(), title="▶️ 게임 시작", description="게임 최대 인원 3명이 모여 게임을 자동 시작합니다."),interaction.user), view=None)
-
+                    await marble_game(interaction)
 
 def setup(bot):
     bot.add_cog(marble_play(bot))
