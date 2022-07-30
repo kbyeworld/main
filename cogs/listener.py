@@ -21,14 +21,13 @@ class Listener(commands.Cog):
     async def on_application_command(self, ctx):
         self.logger.info(f"💻 {ctx.author}({ctx.author.id}) - '/{ctx.command}' 명령어 사용")
         user = await UserDatabase.find(ctx.author.id)
-                if user != None:
+        if user != None:
             if (
                 user["mail_last_notify"] == None
                 or user["mail_last_notify"] + datetime.timedelta(hours=24)
                 <= datetime.datetime.now()
             ):
                 result = await UserDatabase.mail.list(ctx.author.id, False)
-                print(result)
                 if result["error"] == False:
                     if len(result["mail_list"]) > 0:
                         await asyncio.sleep(0.5)
