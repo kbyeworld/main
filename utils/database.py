@@ -72,7 +72,7 @@ class UserDatabase:
                 user = await UserDatabase.find(user_id)
                 if user != None:
                     await client.users.update_one(
-                        {"user_id": user_id, "deleted": False}, {"$set": {"money": str(int(user['money']))+int(money))}}
+                        {"user_id": user_id, "deleted": False}, {"$set": {"money": str(int(user['money'])+int(money))}}
                     )
                     return {"success": True}
                 return {"success": False, "result": "유저를 찾을 수 없습니다."}
