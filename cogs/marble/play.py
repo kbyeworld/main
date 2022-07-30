@@ -109,19 +109,16 @@ class marble_play(commands.Cog):
                     mydict = json.loads(f.read())
                 try:
                     game_data = mydict[user_id]
+                    game_thread = interaction.guild.get_thread(int(game_data["channel_id"]))
                 except KeyError:
                     return await send_response(
                         interaction, content="존재하지 않는 게임이에요.", ephemeral=True
                     )
                 if int(user_id) == interaction.user.id:
                     try:
-                        await interaction.guild.get_thread(
-                            int(game_data["channel_id"])
-                        ).archive(locked=True)
+                        await game_thread.archive(locked=True)
                     except discord.Forbidden:
-                        await interaction.guild.get_thread(
-                            int(game_data["channel_id"])
-                        ).archive()
+                        await game_thread.archive()
                     msg = await interaction.channel.fetch_message(
                         int(game_data["channel_id"])
                     )
@@ -140,27 +137,28 @@ class marble_play(commands.Cog):
                     for player in mydict[user_id]["players"]:
                         self.join.remove(player)
                     del mydict[user_id]
-                    json.dump(
-                        mydict,
-                        open("./data/game.json", encoding="utf-8", mode="w"),
-                        ensure_ascii=True,
-                    )
+                    savejson("./data/game.json", mydict)
                     return await send_response(
-                        interaction, content=f"게임이 취소되었습니다.", ephemeral=True
+                        interaction, content=f"게임이 취소되었어요.", ephemeral=True
+                    )
+                if interaction.user.id in game_data["players"]:
+                    self.join.remove(interaction.user.id)
+                    mydict[user_id]['players'].remove(interaction.user.id)
+                    try:
+                        await game_thread.remove_user(interaction.guild.get_member(interaction.user.id))
+                    except discord.Forbidden:
+                        pass
+                    savejson("./data/game.json", mydict)
+                    return await send_response(
+                        interaction, content=f"게임 대기실에서 퇴장했어요. 참가 버튼을 누르면 다시 참여하실 수 있어요!", ephemeral=True
                     )
                 if interaction.user.id in self.join:
                     return await send_response(
-                        interaction, content="이미 생성되거나 참여한 게임이 있습니다!", ephemeral=True
-                    )
-                if interaction.user.id in game_data["players"]:
-                    return await send_response(
-                        interaction, content=f"이미 참가처리 되었습니다!", ephemeral=True
+                        interaction, content="이미 생성되거나 참여한 게임이 있어요.", ephemeral=True
                     )
                 game_data["players"].append(interaction.user.id)
-                with open("./data/game.json", encoding="utf-8", mode="w") as f:
-                    json.dump(mydict, f, ensure_ascii=True)
-                thread = interaction.guild.get_thread(game_data["channel_id"])
-                await thread.add_user(interaction.guild.get_member(interaction.user.id))
+                savejson("./data/game.json", mydict)
+                await game_thread.add_user(interaction.guild.get_member(interaction.user.id))
                 await send_response(
                     interaction, content=f"참가 처리가 완료되었어요.", ephemeral=True
                 )
