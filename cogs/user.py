@@ -54,10 +54,10 @@ class User(commands.Cog):
 
     async def not_account_check(self):
         result = await UserDatabase.find(self.author.id)
-        if result == None:
+        if result != None:
             embed = Embed.perm_warn(
                 timestamp=datetime.datetime.now(),
-                description=f"{self.author.mention}님은 ``{self.bot.user.name} 서비스``에 가입하지 않으셨어요.\n``/가입`` 명령어로 서비스에 가입하실 수 있어요.",
+                description=f"{self.author.mention}님은 ``{self.bot.user.name} 서비스``에 가입하셨어요\n``/가입`` 명령어로 서비스에 가입하실 수 있어요.",
             )
             Embed.user_footer(embed, self.author)
             await self.respond(embed=embed, ephemeral=True)
