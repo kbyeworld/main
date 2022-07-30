@@ -7,6 +7,7 @@ from discord.commands import Option
 from discord.ext import commands
 
 from utils.embed import Embed
+from utils.database import UserDatabase
 from utils.json_util import loadjson, savejson
 from utils.respond import send_response
 
@@ -18,7 +19,19 @@ class marble_play(commands.Cog):
         mydict = loadjson("./data/game.json")
         self.join = [member for dic in mydict for member in mydict[dic]["players"]]
 
-    @commands.slash_command(name="시작", description="마블 게임을 시작합니다.")
+    async def account_check(self):
+        result = await UserDatabase.find(self.author.id)
+        if result == None:
+            embed = Embed.perm_warn(
+                timestamp=datetime.datetime.now(),
+                description=f"{self.author.mention}님은 ``{self.bot.user.name} 서비스``에 가입하지 않으셨어요.\n``/가입`` 명령어로 서비스에 가입하실 수 있어요.",
+            )
+            Embed.user_footer(embed, self.author)
+            await self.respond(embed=embed, ephemeral=True)
+            return False
+        return True
+
+    @commands.slash_command(name="시작", description="마블 게임을 시작합니다.", checks=[account_check])
     @commands.max_concurrency(1, commands.BucketType.user)
     async def play_start(
         self,
@@ -85,6 +98,13 @@ class marble_play(commands.Cog):
             if interaction.custom_id.startswith(
                 "marble_"
             ) and interaction.custom_id.endswith("_join"):
+                if (await UserDatabase.find(interaction.user.id)) is None:
+                    embed = Embed.perm_warn(
+                        timestamp=datetime.datetime.now(),
+                        description=f"{interaction.user.mention}님은 ``{self.bot.user.name} 서비스``에 가입하지 않으셨어요.\n``/가입`` 명령어로 서비스에 가입하실 수 있어요.",
+                    )
+                    Embed.user_footer(embed, interaction.user)
+                    return await send_response(interaction, content=None, embed=embed, ephemeral=True)
                 user_id = interaction.custom_id.replace("marble_", "").replace(
                     "_join", ""
                 )
