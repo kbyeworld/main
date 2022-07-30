@@ -11,16 +11,6 @@ from utils.json_util import loadjson, savejson
 from utils.respond import send_response
 
 
-class JoinButton(discord.ui.Button):
-    def __init__(self, author: discord.Member):
-        super().__init__(
-            emoji="✅",
-            label="참가하기",
-            custom_id=f"marble_{author.id}_join",
-            style=discord.ButtonStyle.green,
-        )
-
-
 class marble_play(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -83,9 +73,8 @@ class marble_play(commands.Cog):
         self.join.append(ctx.author.id)
 
         view = discord.ui.View()
-        view.add_item(JoinButton(ctx.author))
-        # view.add_item(discord.ui.Button(emoji="✅", label="참가하기", custom_id=f"marble_{ctx.author.id}_join",
-        #                                 style=discord.ButtonStyle.green))
+        view.add_item(discord.ui.Button(emoji="✅", label="참가하기", custom_id=f"marble_{ctx.author.id}_join", style=discord.ButtonStyle.green))
+        view.add_item(discord.ui.Button(emoji="➡️", label="시작하기", custom_id=f"marble_{ctx.author.id}_start", style=discord.ButtonStyle.blurple))
 
         try:
             await start_msg.edit(
