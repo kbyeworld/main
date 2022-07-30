@@ -8,6 +8,7 @@ import datetime
 
 from utils.embed import Embed
 from utils.json_util import loadjson, savejson
+from utils.respond import send_response
 
 
 class JoinButton(discord.ui.Button):
@@ -78,7 +79,6 @@ class marble_play(commands.Cog):
 
     @commands.Cog.listener()
     async def on_interaction(self, interaction: discord.Interaction):
-        print(self.join)
         if interaction.type == discord.InteractionType.component:
             if interaction.custom_id.startswith("marble_") and interaction.custom_id.endswith("_join"):
                 user_id = interaction.custom_id.replace("marble_", "").replace("_join", "")
@@ -87,7 +87,7 @@ class marble_play(commands.Cog):
                 try:
                     game_data = mydict[user_id]
                 except KeyError:
-                    return await interaction.response.send_message("존재하지 않는 게임이에요.", ephemeral=True)
+                    return await send_response(interaction, content="존재하지 않는 게임이에요.", ephemeral=True)
                 if int(user_id) == interaction.user.id:
                     try:
                         await interaction.guild.get_thread(int(game_data["channel_id"])).archive(locked=True)
@@ -97,22 +97,21 @@ class marble_play(commands.Cog):
                     await msg.edit(content="⏹ 게임이 취소되었어요!", view=None, embed=Embed.user_footer(
                         Embed.default(timestamp=datetime.datetime.now(), title="⏹ 게임 취소",
                                       description="호스트가 게임을 취소하였습니다."), interaction.user))
+                    for player in mydict[user_id]['players']: self.join.remove(player)
                     del mydict[user_id]
                     json.dump(mydict, open("./data/game.json", encoding='utf-8', mode="w"), ensure_ascii=True)
-                    return await interaction.response.send_message(f"게임이 취소되었습니다.", ephemeral=True)
+                    return await send_response(interaction, content=f"게임이 취소되었습니다.", ephemeral=True)
                 if interaction.user.id in self.join:
-                    return await interaction.response.send_message("이미 생성되거나 참여한 게임이 있습니다!", ephemeral=True)
+                    return await send_response(interaction, content="이미 생성되거나 참여한 게임이 있습니다!", ephemeral=True)
                 if interaction.user.id in game_data["players"]:
-                    return await interaction.response.send_message(f"이미 참가처리 되었습니다!", ephemeral=True)
+                    return await send_response(interaction, content=f"이미 참가처리 되었습니다!", ephemeral=True)
                 game_data["players"].append(interaction.user.id)
                 with open("./data/game.json", encoding='utf-8', mode="w") as f:
                     json.dump(mydict, f, ensure_ascii=True)
                 thread = interaction.guild.get_thread(game_data['channel_id'])
                 await thread.add_user(interaction.guild.get_member(interaction.user.id))
-                await interaction.response.send_message(f"참가 처리가 완료되었어요.", ephemeral=True)
+                await send_response(interaction, content=f"참가 처리가 완료되었어요.", ephemeral=True)
                 self.join.append(interaction.user.id)
-                # print(self.join)
-
 
 def setup(bot):
     bot.add_cog(marble_play(bot))
