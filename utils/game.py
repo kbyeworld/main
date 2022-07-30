@@ -1,3 +1,4 @@
+import discord
 import datetime
 import json
 import logging
@@ -8,7 +9,8 @@ from utils.respond import send_response
 
 
 async def marble_game(interaction, players):
-    game_data = loadjson('./data/game.json')[(interaction.custom_id.replace("marble_", "").replace("_join", "")).replace("_start", "")]
+    game_data = loadjson('./data/game.json')[
+        (interaction.custom_id.replace("marble_", "").replace("_join", "")).replace("_start", "")]
     province = loadjson(f"./data/game/{game_data['channel_id']}.json")
     province = loadjson(f"./data/province.json")
     game_thread = interaction.guild.get_thread(int(game_data["channel_id"]))
@@ -30,6 +32,7 @@ async def marble_game(interaction, players):
     await game_thread.send('\n'.join(pan_data))
 
     view = discord.ui.View()
-    view.add_item(discord.ui.Button(emoji="🎲", label="주사위 던지기", custom_id=f"{player_1}", style=discord.ButtonStyle.blurple))
+    view.add_item(
+        discord.ui.Button(emoji="🎲", label="주사위 던지기", custom_id=f"dice_{player_1}", style=discord.ButtonStyle.blurple))
 
-    await game_thread.send(embed = Embed.default("주사위 던지기"), view = view)
+    await game_thread.send(embed=Embed.default("주사위 던지기"), view=view)
