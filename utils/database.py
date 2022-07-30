@@ -61,3 +61,59 @@ class UserDatabase:
             return {'success': False, 'result': '존재하지 않는 사용자입니다.'}
         await client.users.update_one({"user_id": user_id, "deleted": False}, {'$set': {"deleted": True, "deleted_at": datetime.datetime.now()}})
         return {'success': True, 'result': '탈퇴를 완료했습니다. 30일 후 재가입이 가능합니다.'}
+
+    class mail:
+        async def add(user_id: int, mail: dict):
+            """
+            user_id (int) - 필수, 디스코드 유저 ID 입력
+            mail (dict) - 필수, DICT 형식으로 입력
+            """
+            user = await UserDatabase.find(user_id)
+            if user != None:
+                user["mail"].insert(0, mail)
+                await client.users.update_one(
+                    {"user_id": user_id, "deleted": False}, {"$set": {"mail": user["mail"]}}
+                )
+                return {"error": False}
+            return {"error": True}
+
+        async def last_notify(user_id: int, time: datetime.datetime):
+            """
+            user_id (int) - 필수, 디스코드 유저 ID 입력
+            time (datetime.datetime) - 필수, datetime.datetime 형식으로 입력
+            """
+            if (await UserDatabase.find(user_id)) != None:
+                await client.users.update_one(
+                    {"user_id": user_id, "deleted": False}, {"$set": {"mail_last_notify": time}}
+                )
+                return {"error": False}
+            return {"error": True}
+
+        async def list(user_id: int, read: bool = None):
+            """
+            user_id (int) - 필수, 조회할 유저 id 입력
+            read (bool) - 선택, 읽은 이메일 (True) / 안 읽은 이메일 (False) / 모두 (None)
+            """
+            if (await UserDatabase.find(user_id)) != None:
+                mail_list = []
+                if read == None:
+                    for i in (await UserDatabase.find(user_id))["mail"]:
+                        mail_list.append(i)
+                    return {"error": False, "mail_list": mail_list}
+                for i in (await UserDatabase.find(user_id))["mail"]:
+                    if read == i["read"]:
+                        mail_list.append(i)
+                return {"error": False, "mail_list": mail_list}
+            else:
+                return {"error": True}
+
+        async def set(user_id: int, data: dict):
+            """
+            user_id (int) - 필수, 조회할 유저 id 입력
+            data (dict) - 필수, 설정할 데이터 입력
+            """
+            if (await UserDatabase.find(user_id)) != None:
+                await client.users.update_one({"user_id": user_id, "deleted": False}, {"$set": {"mail": data}})
+                return {"error": False}
+            else:
+                return {"error": True}
