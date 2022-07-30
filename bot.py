@@ -6,22 +6,21 @@ import discord
 from discord.ext import commands
 
 import config
-
 from utils.json_util import savejson
+
 
 class kByeWorld(commands.AutoShardedBot):
     def __init__(self):
         intents = discord.Intents.default()
-        intents.members = (True if "members" in config.Setting.intents else False)
-        intents.presences = (True if "presences" in config.Setting.intents else False)
-        intents.message_content = (True if "message_content" in config.Setting.intents else False)
+        intents.members = True if "members" in config.Setting.intents else False
+        intents.presences = True if "presences" in config.Setting.intents else False
+        intents.message_content = (
+            True if "message_content" in config.Setting.intents else False
+        )
         super().__init__(
-            command_prefix=(
-                config.Bot.prefix
-            ),
+            command_prefix=(config.Bot.prefix),
             owner_ids=config.Setting.owner_ids,
-            intents=intents
-
+            intents=intents,
         )
 
         logger = logging.getLogger("kbyeworld")
@@ -48,8 +47,18 @@ class kByeWorld(commands.AutoShardedBot):
             savejson("./data/game.json", {})
             logger.info("🛒 | Add GameData File")
 
-        files = [f"cogs.{item[:-3]}" for item in os.listdir(f"./cogs/") if os.path.isfile(f"./cogs/{item}") if item.endswith(".py")] \
-                + [f"cogs.{i}.{item[:-3]}" for i in os.listdir("./cogs/") if os.path.isdir(f"./cogs/{i}") for item in os.listdir(f"./cogs/{i}") if item.endswith(".py")]
+        files = [
+            f"cogs.{item[:-3]}"
+            for item in os.listdir(f"./cogs/")
+            if os.path.isfile(f"./cogs/{item}")
+            if item.endswith(".py")
+        ] + [
+            f"cogs.{i}.{item[:-3]}"
+            for i in os.listdir("./cogs/")
+            if os.path.isdir(f"./cogs/{i}")
+            for item in os.listdir(f"./cogs/{i}")
+            if item.endswith(".py")
+        ]
         for file in files:
             try:
                 self.load_extension(file)
