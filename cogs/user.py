@@ -1,5 +1,5 @@
 import datetime
-
+import aiohttp
 import discord
 from discord.ext import commands
 
@@ -74,6 +74,23 @@ class User(commands.Cog):
         embed = Embed.default("👋 K-ByeWorld 서비스 가입", description="아래의 버튼을 눌러서 가입하세요.", timestamp=datetime.datetime.now())
         Embed.user_footer(embed, ctx.author)
         await ctx.respond(embed=embed, view=ConfirmButton(type="가입"))
+
+    @commands.slash_command(
+        name="투표인증",
+        description="K-BYEWORLD의 투표를 인증하여 보상을 받습니다.",
+        checks=[not_account_check],
+    )
+    async def user_votecheck(self, ctx):
+        await ctx.defer(ephemeral=True)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f"https://kxdapi.herokuapp.com/get/DKLQG31856/{ctx.author.id}") as response:
+                json = await response.json()
+
+        if json['message'] == True:
+            await UserDatabase.money.add(ctx.author.id, "1500000")
+            await ctx.respond("투표해주셔서 감사합니다!")
+        else:
+            await ctx.respond("투표를 하지 않으셨어요. https://discord.gg/WzFc9CYeJZ")
 
     @commands.slash_command(
         name="탈퇴",
