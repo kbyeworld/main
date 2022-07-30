@@ -23,6 +23,9 @@ class kByeWorld(commands.AutoShardedBot):
             intents=intents,
         )
 
+        if os.path.isdir("./logs") is False:
+            os.mkdir("./logs")
+
         logger = logging.getLogger("kbyeworld")
         logger.setLevel(logging.INFO)
         stream = logging.StreamHandler()
@@ -47,18 +50,22 @@ class kByeWorld(commands.AutoShardedBot):
             savejson("./data/game.json", {})
             logger.info("🛒 | Add GameData File")
 
+        if os.path.isdir("./data/game") is False:
+            os.mkdir("./data/game")
+            logger.info("🛒 | Add GameData Folder")
+
         files = [
-            f"cogs.{item[:-3]}"
-            for item in os.listdir(f"./cogs/")
-            if os.path.isfile(f"./cogs/{item}")
-            if item.endswith(".py")
-        ] + [
-            f"cogs.{i}.{item[:-3]}"
-            for i in os.listdir("./cogs/")
-            if os.path.isdir(f"./cogs/{i}")
-            for item in os.listdir(f"./cogs/{i}")
-            if item.endswith(".py")
-        ]
+                    f"cogs.{item[:-3]}"
+                    for item in os.listdir(f"./cogs/")
+                    if os.path.isfile(f"./cogs/{item}")
+                    if item.endswith(".py")
+                ] + [
+                    f"cogs.{i}.{item[:-3]}"
+                    for i in os.listdir("./cogs/")
+                    if os.path.isdir(f"./cogs/{i}")
+                    for item in os.listdir(f"./cogs/{i}")
+                    if item.endswith(".py")
+                ]
         for file in files:
             try:
                 self.load_extension(file)
