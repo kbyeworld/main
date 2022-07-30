@@ -15,11 +15,11 @@ class UserDatabase:
         """
         return await client.users.find_one({"user_id": user_id, 'deleted': deleted})
 
-    async def list(filiter: dict = {}):
+    async def list(filter: dict = {}):
         """
-        filiter (dict) - 선택, 리스트 조회 필터를 입력합니다.
+        filter (dict) - 선택, 리스트 조회 필터를 입력합니다.
         """
-        return [data async for data in client.users.find(filiter)]
+        return [data async for data in client.users.find(filter)]
 
     async def add(user_id: int):
         """
