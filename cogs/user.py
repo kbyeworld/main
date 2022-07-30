@@ -87,7 +87,7 @@ class User(commands.Cog):
                 json = await response.json()
 
         if json['message'] == True:
-            await UserDatabase.money.add(ctx.author.id, "1500000")
+            # await UserDatabase.money.add(ctx.author.id, "1500000")
             await ctx.respond("투표해주셔서 감사합니다!")
         else:
             await ctx.respond("투표를 하지 않으셨어요. https://discord.gg/WzFc9CYeJZ")
