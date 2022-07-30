@@ -45,7 +45,7 @@ class User(commands.Cog):
         if result:
             embed = Embed.perm_warn(
                 timestamp=datetime.datetime.now(),
-                description=f"{self.author.mention}님은 ``{self.bot.user.name} 서비스``에 이미 가입되어 있어요.\n``/탈퇴`` 명령어로 탈퇴하실 수 있어요.",
+                description=f"{self.author.mention}님은 ``{self.bot.user.name} 서비스``에 에 이미 가입되어 있어요.\n``/탈퇴`` 명령어로 탈퇴하실 수 있어요.",
             )
             Embed.user_footer(embed, self.author)
             await self.respond(embed=embed, ephemeral=True)
@@ -54,10 +54,10 @@ class User(commands.Cog):
 
     async def not_account_check(self):
         result = await UserDatabase.find(self.author.id)
-        if result != None:
+        if result == None:
             embed = Embed.perm_warn(
                 timestamp=datetime.datetime.now(),
-                description=f"{self.author.mention}님은 ``{self.bot.user.name} 서비스``에 가입하셨어요\n``/가입`` 명령어로 서비스에 가입하실 수 있어요.",
+                description=f"{self.author.mention}님은 ``{self.bot.user.name} 서비스``에 가입되어 있지 않아요.\n``/가입`` 명령어로 서비스에 가입하실 수 있어요.",
             )
             Embed.user_footer(embed, self.author)
             await self.respond(embed=embed, ephemeral=True)
@@ -67,7 +67,7 @@ class User(commands.Cog):
     @commands.slash_command(
         name="가입",
         description="K-BYEWORLD의 서비스에 가입합니다.",
-        checks=[not_account_check],
+        checks=[account_check],
     )
     async def user_register(self, ctx):
         await ctx.defer(ephemeral=True)
@@ -78,7 +78,7 @@ class User(commands.Cog):
     @commands.slash_command(
         name="투표인증",
         description="K-BYEWORLD의 투표를 인증하여 보상을 받습니다.",
-        checks=[account_check],
+        checks=[not_account_check],
     )
     async def user_votecheck(self, ctx):
         await ctx.defer(ephemeral=True)
@@ -95,7 +95,7 @@ class User(commands.Cog):
     @commands.slash_command(
         name="탈퇴",
         description="K-BYEWORLD의 서비스에서 탈퇴합니다.",
-        checks=[account_check],
+        checks=[not_account_check],
     )
     async def user_delete(self, ctx):
         await ctx.defer(ephemeral=True)
