@@ -1,3 +1,4 @@
+import logging
 import discord
 from discord.ext import commands
 from discord.commands import Option
@@ -22,10 +23,15 @@ class JoinButton(discord.ui.Button):
 class marble_play(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.logger = logging.getLogger("kbyeworld")
+
+        print("HELLO")
 
         with open("./data/game.json", encoding='utf-8', mode="r") as f:
             mydict = json.loads(f.read())
-        self.join = [member for dic in mydict for member in dic["players"]]
+        print(mydict)
+        self.join = [member for dic in mydict for member in mydict[dic]["players"]]
+        print(self.join)
 
     @commands.slash_command(name="시작", description="마블 게임을 시작합니다.")
     @commands.max_concurrency(1, commands.BucketType.user)
@@ -78,8 +84,6 @@ class marble_play(commands.Cog):
                 user_id = interaction.custom_id.replace("marble_", "").replace("_join", "")
                 with open("./data/game.json", encoding='utf-8', mode="r") as f:
                     mydict = json.loads(f.read())
-                if interaction.user.id in self.join:
-                    return await interaction.response.send_message("이미 생성되거나 참여한 게임이 있습니다!", ephemeral=True)
                 try:
                     game_data = mydict[user_id]
                 except KeyError:
@@ -96,6 +100,8 @@ class marble_play(commands.Cog):
                     del mydict[user_id]
                     json.dump(mydict, open("./data/game.json", encoding='utf-8', mode="w"), ensure_ascii=True)
                     return await interaction.response.send_message(f"게임이 취소되었습니다.", ephemeral=True)
+                if interaction.user.id in self.join:
+                    return await interaction.response.send_message("이미 생성되거나 참여한 게임이 있습니다!", ephemeral=True)
                 if interaction.user.id in game_data["players"]:
                     return await interaction.response.send_message(f"이미 참가처리 되었습니다!", ephemeral=True)
                 game_data["players"].append(interaction.user.id)
