@@ -51,7 +51,7 @@ class UserDatabase:
                 "deleted": False,
             },
         )
-        return {'success': True, 'result': '가입을 완료했습니다! ``/메일 확인 필터:읽지 않음``으로 메일을 확인해보세요!'}
+        return {'success': True, 'result': '가입을 완료했습니다! ``/메일 확인 필터:읽지 않은 메일``으로 메일을 확인해보세요!'}
 
     async def delete(user_id: int):
         """
