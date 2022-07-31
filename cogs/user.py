@@ -3,6 +3,7 @@ import aiohttp
 import discord
 from discord.ext import commands
 
+import config
 from utils.embed import Embed
 from utils.database import UserDatabase
 
@@ -83,7 +84,7 @@ class User(commands.Cog):
     async def user_votecheck(self, ctx):
         await ctx.defer(ephemeral=True)
         async with aiohttp.ClientSession() as session:
-            async with session.get(f"https://kxdapi.herokuapp.com/get/DKLQG31856/{ctx.author.id}") as response:
+            async with session.get(f"https://kxdapi.herokuapp.com/get/{config.Setting.KxD_API_Key}/{ctx.author.id}") as response:
                 json = await response.json()
 
         if json['message']:
