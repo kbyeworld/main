@@ -38,4 +38,4 @@ async def marble_game(interaction, players):
     view.add_item(
         discord.ui.Button(emoji="🎲", label="주사위 던지기", custom_id=f"dice_{player_1}", style=discord.ButtonStyle.blurple))
 
-    await game_thread.send(embed=Embed.default("주사위 던지기"), view=view)
+    await game_thread.send(f"<@{player_1}>님의 차례입니다.", view=view)
