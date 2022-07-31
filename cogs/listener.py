@@ -16,6 +16,12 @@ class Listener(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         self.logger.info(f"🚥 {self.bot.user}이(가) 준비되었습니다.")
+        await self.bot.change_presence(
+            status=discord.Status.online,
+            activity=discord.Game(
+                name=f"/정보 | 🍽️ 오늘도 맛있는 하루!"
+            ),
+        )
 
     @commands.Cog.listener()
     async def on_application_command(self, ctx):
