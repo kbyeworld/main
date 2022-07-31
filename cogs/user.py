@@ -86,7 +86,7 @@ class User(commands.Cog):
             async with session.get(f"https://kxdapi.herokuapp.com/get/DKLQG31856/{ctx.author.id}") as response:
                 json = await response.json()
 
-        if json['message'] == True:
+        if json['message']:
             # await UserDatabase.money.add(ctx.author.id, "1500000")
             await ctx.respond("투표해주셔서 감사합니다!")
         else:
