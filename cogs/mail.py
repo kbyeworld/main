@@ -9,6 +9,7 @@ import config
 from utils.database import UserDatabase
 from utils.embed import Embed
 
+
 class Mail_Form(discord.ui.Modal):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(
@@ -117,6 +118,7 @@ class Mail_Form(discord.ui.Modal):
         Embed.user_footer(embed, interaction.user)
         await msg.edit_original_message(content=None, embed=embed, view=None)
 
+
 class mail(commands.Cog, name="메일"):
     def __init__(self, bot):
         self.bot = bot
@@ -150,15 +152,15 @@ class mail(commands.Cog, name="메일"):
         checks=[account_check],
     )
     async def alert_check(
-        self,
-        ctx,
-        filiter: Option(
-            str,
-            "읽을 메일을 분류해서 보여드려요.",
-            choices=["전체", "읽지 않은 메일", "읽은 메일"],
-            name="필터",
-            required=False,
-        ) = "전체",
+            self,
+            ctx,
+            filiter: Option(
+                str,
+                "읽을 메일을 분류해서 보여드려요.",
+                choices=["전체", "읽지 않은 메일", "읽은 메일"],
+                name="필터",
+                required=False,
+            ) = "전체",
     ):
         await ctx.defer(ephemeral=True)
         read = None
