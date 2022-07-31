@@ -1,6 +1,8 @@
-import motor.motor_asyncio
 import asyncio
 import datetime
+
+import motor.motor_asyncio
+
 import config
 
 client = motor.motor_asyncio.AsyncIOMotorClient(config.Setting.database.uri)[

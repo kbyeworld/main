@@ -1,8 +1,10 @@
+import random
+
 import discord
 from discord.ext import commands
-import random
-from utils.respond import send_response
+
 from utils.json_util import loadjson, savejson
+from utils.respond import send_response
 
 
 class DiceCog(commands.Cog):
