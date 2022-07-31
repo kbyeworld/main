@@ -19,7 +19,7 @@ class Listener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_application_command(self, ctx):
-        self.logger.info(f"💻 {ctx.author}({ctx.author.id}) - '/{ctx.command}' 명령어 사용")
+        self.logger.info(f"💻 | {ctx.author}({ctx.author.id}) - '/{ctx.command}' 명령어 사용")
         user = await UserDatabase.find(ctx.author.id)
         if user != None:
             if (
