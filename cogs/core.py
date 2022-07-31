@@ -59,7 +59,7 @@ class Core(commands.Cog):
         m = await ctx.respond(
             embed=embed,
         )
-        target_time: datetime = (m.created_at).replace(tzinfo=pytz.utc)
+        target_time: datetime = m.created_at.replace(tzinfo=pytz.utc)
         ping = target_time - start_time
         embed = Embed.default(
             title="🏓 Pong!",
