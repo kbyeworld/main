@@ -11,6 +11,7 @@ from utils.database import UserDatabase
 from utils.json_util import loadjson, savejson
 from utils.respond import send_response
 from utils.game import marble_game
+from utils.basic_util import is_text_channel
 
 
 class marble_play(commands.Cog):
@@ -34,6 +35,7 @@ class marble_play(commands.Cog):
 
     @commands.slash_command(name="시작", description="마블 게임을 시작합니다.", checks=[account_check])
     @commands.max_concurrency(1, commands.BucketType.user)
+    @commands.check(is_text_channel)
     async def play_start(
             self,
             ctx,
@@ -219,6 +221,7 @@ class marble_play(commands.Cog):
                     shutil.copyfile("./data/province.json", f"./data/game/{game_thread.id}.json")
                     province_data = loadjson(f"./data/game/{game_thread.id}.json")
                     province_data["game_owner"] = user_id
+                    province_data["province"][0]["users"] = game_data["players"]
                     print(user_id)
                     print(province_data)
                     savejson(f"./data/game/{game_thread.id}.json", province_data)
