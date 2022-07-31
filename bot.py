@@ -55,17 +55,17 @@ class kByeWorld(commands.AutoShardedBot):
             logger.info("🛒 | Add GameData Folder")
 
         files = [
-                    f"cogs.{item[:-3]}"
-                    for item in os.listdir(f"./cogs/")
-                    if os.path.isfile(f"./cogs/{item}")
-                    if item.endswith(".py")
-                ] + [
-                    f"cogs.{i}.{item[:-3]}"
-                    for i in os.listdir("./cogs/")
-                    if os.path.isdir(f"./cogs/{i}")
-                    for item in os.listdir(f"./cogs/{i}")
-                    if item.endswith(".py")
-                ]
+            f"cogs.{item[:-3]}"
+            for item in os.listdir(f"./cogs/")
+            if os.path.isfile(f"./cogs/{item}")
+            if item.endswith(".py")
+        ] + [
+            f"cogs.{i}.{item[:-3]}"
+            for i in os.listdir("./cogs/")
+            if os.path.isdir(f"./cogs/{i}")
+            for item in os.listdir(f"./cogs/{i}")
+            if item.endswith(".py")
+        ]
         for file in files:
             try:
                 self.load_extension(file)

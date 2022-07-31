@@ -62,7 +62,9 @@ class Mail_Form(discord.ui.Modal):
                 label="아니오", emoji="❎", style=discord.ButtonStyle.red, custom_id=f"no"
             )
         )
-        msg = await interaction.response.send_message(content="이와 같이 전송하시겠습니까?", embed=embed, view=view, ephemeral=True)
+        msg = await interaction.response.send_message(
+            content="이와 같이 전송하시겠습니까?", embed=embed, view=view, ephemeral=True
+        )
 
         def check(inter):
             return inter.user.id == interaction.user.id
@@ -94,7 +96,7 @@ class Mail_Form(discord.ui.Modal):
             Embed.user_footer(embed, interaction.user)
             return await msg.edit_original_message(content=None, embed=embed, view=None)
 
-        allu = await UserDatabase.list({'deleted': False})
+        allu = await UserDatabase.list({"deleted": False})
         json = {
             "title": title,
             "description": description,
@@ -152,15 +154,15 @@ class mail(commands.Cog, name="메일"):
         checks=[account_check],
     )
     async def alert_check(
-            self,
-            ctx,
-            filiter: Option(
-                str,
-                "읽을 메일을 분류해서 보여드려요.",
-                choices=["전체", "읽지 않은 메일", "읽은 메일"],
-                name="필터",
-                required=False,
-            ) = "전체",
+        self,
+        ctx,
+        filiter: Option(
+            str,
+            "읽을 메일을 분류해서 보여드려요.",
+            choices=["전체", "읽지 않은 메일", "읽은 메일"],
+            name="필터",
+            required=False,
+        ) = "전체",
     ):
         await ctx.defer(ephemeral=True)
         read = None

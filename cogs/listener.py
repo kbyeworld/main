@@ -19,9 +19,7 @@ class Listener(commands.Cog):
         self.logger.info(f"🚥 {self.bot.user}이(가) 준비되었습니다.")
         await self.bot.change_presence(
             status=discord.Status.online,
-            activity=discord.Game(
-                name=f"/정보 | 🍽️ 오늘도 맛있는 하루!"
-            ),
+            activity=discord.Game(name=f"/정보 | 🍽️ 오늘도 맛있는 하루!"),
         )
 
     @commands.Cog.listener()
@@ -30,9 +28,9 @@ class Listener(commands.Cog):
         user = await UserDatabase.find(ctx.author.id)
         if user != None:
             if (
-                    user["mail_last_notify"] == None
-                    or user["mail_last_notify"] + datetime.timedelta(hours=24)
-                    <= datetime.datetime.now()
+                user["mail_last_notify"] == None
+                or user["mail_last_notify"] + datetime.timedelta(hours=24)
+                <= datetime.datetime.now()
             ):
                 result = await UserDatabase.mail.list(ctx.author.id, False)
                 if result["error"] == False:
@@ -52,9 +50,9 @@ class Listener(commands.Cog):
                             ctx.author.id, datetime.datetime.now()
                         )
 
-    @commands.Cog.listener('on_application_command_error')
-    @commands.Cog.listener('on_command_error')
-    @commands.Cog.listener('on_error')
+    @commands.Cog.listener("on_application_command_error")
+    @commands.Cog.listener("on_command_error")
+    @commands.Cog.listener("on_error")
     async def error(self, ctx, error):
         try:
             error = error.original
