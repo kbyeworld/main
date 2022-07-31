@@ -1,3 +1,5 @@
+import os
+import asyncio
 import datetime
 import logging
 import shutil
@@ -11,7 +13,7 @@ from utils.database import UserDatabase
 from utils.json_util import loadjson, savejson
 from utils.respond import send_response
 from utils.game import marble_game
-from utils.basic_util import is_text_channel
+from utils.basic_util import is_text_channel, is_thread
 
 
 class marble_play(commands.Cog):
@@ -20,6 +22,29 @@ class marble_play(commands.Cog):
         self.logger = logging.getLogger("kbyeworld")
         mydict = loadjson("./data/game.json")
         self.join = [member for dic in mydict for member in mydict[dic]["players"]]
+
+        def delete_join(del_data):
+            try:
+                self.join.remove(del_data)
+            except ValueError:
+                pass
+
+    async def finish(self, thread_id):
+        province_data = loadjson(f"./data/game/{thread_id}.json")
+        game_owner = province_data['game_owner']
+        os.remove(f"./data/game/{thread_id}.json")
+        game_data = loadjson("./data/game.json")
+        game_member = game_data[str(game_owner)]['players']
+        game_data.pop(game_owner)
+        savejson("./data/game.json", game_data)
+        [self.join.remove(userid) for userid in game_member]
+        print(self.join)
+        channel = self.bot.get_channel(int(thread_id))
+        print(channel.type)
+        await channel.send("게임이 종료되었습니다. 60초 후 스레드가 아카이브됩니다.")
+        await asyncio.sleep(60)
+        await channel.archive(locked=True)
+        print(self.join)
 
     async def account_check(self):
         result = await UserDatabase.find(self.author.id)
@@ -66,7 +91,7 @@ class marble_play(commands.Cog):
         )
         embed = Embed.default(
             title="🚩 게임 시작하기",
-            description=f"{ctx.author}님이 마블 게임을 시작하셨습니다.\n참가하시려면 아래의 버튼을 눌러주세요.",
+            description=f"{ctx.author}님이 마블 게임을 시작하셨습니다.\n참가하시려면 아래의 버튼을 눌러주세요.\n\n게임 생성자가 ``참가하기``를 클릭할 경우, 게임이 종료됩니다.",
             timestamp=datetime.datetime.now(),
         )
         Embed.user_footer(embed, ctx.author)
@@ -97,9 +122,50 @@ class marble_play(commands.Cog):
         except Exception as error:
             pass
 
+    @commands.slash_command(name="종료", description="[게임 생성자 전용] 게임을 종료합니다.")
+    @commands.check(is_thread)
+    async def finish_game(self, ctx):
+        print("finish_game")
+        # await ctx.defer(ephemeral=True)
+        game_data = loadjson("./data/game/{}.json".format(ctx.channel.id))
+        print(game_data)
+        if ctx.author.id != int(game_data["game_owner"]):
+            return await ctx.respond(f"이 명령어는 게임 생성자(<@{game_data['game_owner']}>)만 사용할수 있습니다.", ephemeral=True)
+        view = discord.ui.View()
+        view.add_item(discord.ui.Button(emoji="✅", label="종료하기", custom_id=f"marble_finish_{ctx.channel.id}_confirm",
+                                        style=discord.ButtonStyle.green))
+        view.add_item(discord.ui.Button(emoji="❎", label="취소하기", custom_id=f"marble_finish_{ctx.channel.id}_cancel",
+                                        style=discord.ButtonStyle.red))
+        print("create view")
+        await ctx.respond("게임을 종료하시겠습니까?", view=view)
+
+    @commands.slash_command(name="강제종료", description="게임 생성자가 오프라인일때 일반 참가자가 강제로 종료할수 있습니다.")
+    @commands.check(is_thread)
+    async def force_finish_game(self, ctx):
+        await ctx.defer(ephemeral=True)
+        # game_data = loadjson('./data/game.json')
+        # print(game_data)
+        try:
+            if os.path.isfile(f"./data/game/{ctx.channel.id}.json"):
+                province_data = loadjson(f"./data/game/{ctx.channel.id}.json")
+                if ctx.guild.get_member(int(province_data["game_owner"])).status == discord.Status.offline:
+                    await ctx.respond("게임을 강제종료하였습니다.")
+                    return await self.finish(ctx.channel.id)
+                else:
+                    await ctx.respond("게임 생성자가 오프라인이 아닙니다.")
+            else:
+                await ctx.respond("존재하지 않는 게임입니다.")
+        except FileNotFoundError:
+            await ctx.respond("존재하지 않는 게임입니다.")
+
     @commands.Cog.listener()
     async def on_interaction(self, interaction: discord.Interaction):
         if interaction.type == discord.InteractionType.component:
+            if interaction.custom_id.startswith("marble_finish_") and interaction.custom_id.endswith("_confirm"):
+                if interaction.user.id == int(loadjson(f"./data/game/{interaction.channel.id}.json")["game_owner"]):
+                    await interaction.message.delete()
+                    await self.finish(interaction.channel.id)
+
             if interaction.custom_id.startswith(
                     "marble_"
             ) and interaction.custom_id.endswith("_join"):
@@ -227,7 +293,8 @@ class marble_play(commands.Cog):
                     savejson(f"./data/game/{game_thread.id}.json", province_data)
                     await (await interaction.channel.fetch_message(int(game_data["channel_id"]))).edit(
                         embed=Embed.user_footer(Embed.default(timestamp=datetime.datetime.now(), title="▶️ 게임 시작",
-                                                              description="호스트가 게임을 시작했습니다."), interaction.user), view=None)
+                                                              description="호스트가 게임을 시작했습니다."), interaction.user),
+                        view=None)
                     await marble_game(interaction, players=game_data["players"])
 
 
