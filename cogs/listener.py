@@ -8,6 +8,7 @@ from discord.ext import commands
 from utils.embed import Embed
 from utils.database import UserDatabase
 
+
 class Listener(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -29,9 +30,9 @@ class Listener(commands.Cog):
         user = await UserDatabase.find(ctx.author.id)
         if user != None:
             if (
-                user["mail_last_notify"] == None
-                or user["mail_last_notify"] + datetime.timedelta(hours=24)
-                <= datetime.datetime.now()
+                    user["mail_last_notify"] == None
+                    or user["mail_last_notify"] + datetime.timedelta(hours=24)
+                    <= datetime.datetime.now()
             ):
                 result = await UserDatabase.mail.list(ctx.author.id, False)
                 if result["error"] == False:

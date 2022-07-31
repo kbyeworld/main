@@ -38,13 +38,10 @@ class marble_play(commands.Cog):
         game_data.pop(game_owner)
         savejson("./data/game.json", game_data)
         [self.join.remove(userid) for userid in game_member]
-        print(self.join)
         channel = self.bot.get_channel(int(thread_id))
-        print(channel.type)
         await channel.send("게임이 종료되었습니다. 60초 후 스레드가 아카이브됩니다.")
         await asyncio.sleep(60)
         await channel.archive(locked=True)
-        print(self.join)
 
     async def account_check(self):
         result = await UserDatabase.find(self.author.id)
@@ -125,10 +122,7 @@ class marble_play(commands.Cog):
     @commands.slash_command(name="종료", description="[게임 생성자 전용] 게임을 종료합니다.")
     @commands.check(is_thread)
     async def finish_game(self, ctx):
-        print("finish_game")
-        # await ctx.defer(ephemeral=True)
         game_data = loadjson("./data/game/{}.json".format(ctx.channel.id))
-        print(game_data)
         if ctx.author.id != int(game_data["game_owner"]):
             return await ctx.respond(f"이 명령어는 게임 생성자(<@{game_data['game_owner']}>)만 사용할수 있습니다.", ephemeral=True)
         view = discord.ui.View()
@@ -136,15 +130,12 @@ class marble_play(commands.Cog):
                                         style=discord.ButtonStyle.green))
         view.add_item(discord.ui.Button(emoji="❎", label="취소하기", custom_id=f"marble_finish_{ctx.channel.id}_cancel",
                                         style=discord.ButtonStyle.red))
-        print("create view")
         await ctx.respond("게임을 종료하시겠습니까?", view=view)
 
     @commands.slash_command(name="강제종료", description="게임 생성자가 오프라인일때 일반 참가자가 강제로 종료할수 있습니다.")
     @commands.check(is_thread)
     async def force_finish_game(self, ctx):
         await ctx.defer(ephemeral=True)
-        # game_data = loadjson('./data/game.json')
-        # print(game_data)
         try:
             if os.path.isfile(f"./data/game/{ctx.channel.id}.json"):
                 province_data = loadjson(f"./data/game/{ctx.channel.id}.json")
@@ -247,8 +238,6 @@ class marble_play(commands.Cog):
                     province_data = loadjson(f"./data/game/{game_thread.id}.json")
                     province_data["game_owner"] = user_id
                     province_data["province"][0]["users"] = game_data["players"]
-                    print(user_id)
-                    print(province_data)
                     savejson(f"./data/game/{game_thread.id}.json", province_data)
                     await (await interaction.channel.fetch_message(int(game_data["channel_id"]))).edit(
                         embed=Embed.user_footer(Embed.default(timestamp=datetime.datetime.now(), title="▶️ 게임 시작",
@@ -288,8 +277,6 @@ class marble_play(commands.Cog):
                     province_data = loadjson(f"./data/game/{game_thread.id}.json")
                     province_data["game_owner"] = user_id
                     province_data["province"][0]["users"] = game_data["players"]
-                    print(user_id)
-                    print(province_data)
                     savejson(f"./data/game/{game_thread.id}.json", province_data)
                     await (await interaction.channel.fetch_message(int(game_data["channel_id"]))).edit(
                         embed=Embed.user_footer(Embed.default(timestamp=datetime.datetime.now(), title="▶️ 게임 시작",

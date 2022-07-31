@@ -37,9 +37,8 @@ class ConfirmButton(discord.ui.View):
 
 
 class User(commands.Cog):
-    def init(self, bot):
+    def __init__(self, bot):
         self.bot = bot
-        print("test")
 
     async def account_check(self):
         result = await UserDatabase.find(self.author.id)

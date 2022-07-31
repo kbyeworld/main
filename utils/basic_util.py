@@ -12,7 +12,6 @@ async def is_text_channel(ctx):
 
 
 async def is_thread(ctx):
-    print(ctx.channel.type)
     if ctx.channel.type == discord.ChannelType.public_thread:
         if ctx.channel.name.endswith("마블게임방") and os.path.isfile(f"./data/game/{ctx.channel.id}.json"):
             return True
