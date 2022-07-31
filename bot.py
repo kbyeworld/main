@@ -18,7 +18,7 @@ class kByeWorld(commands.AutoShardedBot):
             True if "message_content" in config.Setting.intents else False
         )
         super().__init__(
-            command_prefix=(config.Bot.prefix),
+            command_prefix=config.Bot.prefix,
             owner_ids=config.Setting.owner_ids,
             intents=intents,
         )
