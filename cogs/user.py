@@ -134,7 +134,23 @@ class User(commands.Cog):
             # await UserDatabase.money.add(ctx.author.id, "1500000") # 인증 보상; 사용시 주석 해제
             await ctx.respond("투표해주셔서 감사합니다!")
         else:
-            await ctx.respond("투표를 하지 않으셨어요. https://discord.gg/WzFc9CYeJZ")
+            embed = Embed.default(
+                "투표를 안하셨네요!",
+                description="아직 투표를 하지 않으셨다구요?\n아래의 버튼을 눌러서 투표를 진행하세요!",
+                timestamp=datetime.datetime.now()
+            )
+            Embed.user_footer(embed, ctx.author)
+            view = discord.ui.View()
+            view.add_item(
+                discord.ui.Button(
+                    emoji="🔗",
+                    label="투표하러가기",
+                    style=discord.ButtonStyle.primary,
+                    url="https://discord.com/channels/972789561719652412/1002922909309882448/1002923749198278686"
+                )
+            )
+            await ctx.respond("https://discord.gg/WzFc9CYeJZ", embed=embed, view=view)
+            # await ctx.respond("투표를 하지 않으셨어요. https://discord.gg/WzFc9CYeJZ")
 
     @commands.slash_command(
         name="탈퇴",
