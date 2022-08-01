@@ -1,4 +1,6 @@
 import random
+import asyncio
+import datetime
 
 import discord
 from discord.ext import commands
@@ -6,6 +8,7 @@ from discord.ext import commands
 from utils.json_util import loadjson, savejson
 from utils.respond import send_response
 from utils.pan import pan
+from utils.embed import Embed
 
 class DiceCog(commands.Cog):
     def __init__(self, bot):
@@ -29,10 +32,47 @@ class DiceCog(commands.Cog):
                         user_new_loc = game_data["province"][user_now_loc_num]["name"]
                         user_pre_loc_num = user_loc_num
                     user_loc_num += 1
-                await send_response(
+                embed = Embed.default(description=f"<@{interaction.user.id}>님의 주사위는 ``{con}``입니다!\n현재 위치는 ``{user_new_loc}``입니다.", timestamp=datetime.datetime.now())
+                view = discord.ui.View()
+                view_data = []
+                if game_data['province'][user_now_loc_num]['owner'] != "System":
+                    embed.add_field(name="부가 정보", value=f">>> 땅 주인 : {f'''<@{game_data['province'][user_now_loc_num]['owner']}>''' if game_data['province'][user_now_loc_num]['owner'] != 0 else '소유주 없음 (구매 가능)'}")
+                    btn = discord.ui.Button(
+                            emoji="💳",
+                            label="땅 구매하기",
+                            custom_id=f"buy_{interaction.user.id}",
+                            style=discord.ButtonStyle.green,
+                        )
+                    view_data.append(btn)
+                    view.add_item(btn)
+                elif game_data['province'][user_now_loc_num]['owner'] == interaction.user.id:
+                    btn = discord.ui.Button(
+                        emoji="🏛️",
+                        label="랜드마크 건설하기",
+                        custom_id=f"built_{interaction.user.id}",
+                        style=discord.ButtonStyle.blurple,
+                    )
+                    view_data.append(btn)
+                    view.add_item(btn)
+                msg = await send_response(
                     interaction,
-                    f"<@{interaction.user.id}>님의 주사위는 {con}입니다! 현재 위치는 {user_new_loc}입니다.",
+                    content=f"<@{interaction.user.id}>",
+                    embed=Embed.user_footer(embed, interaction.user),
+                    view=view,
                 )
+
+                if len(view_data) != 0:
+                    def check(inter):
+                        return inter.user.id == interaction.user.id and inter.channel.id == interaction.channel.id and ("buy_" in inter.custom_id or "built_" in inter.custom_id)
+
+                    try:
+                        interaction_check = await self.bot.wait_for(
+                            "interaction", check=check, timeout=60.0
+                        )
+                        print(interaction_check)
+                    except asyncio.TimeoutError:
+                        view.disable_all_items()
+                        await msg.edit_original_message(view=view)
 
                 data = loadjson(f"./data/game/{interaction.channel_id}.json")
                 province = data["province"]
