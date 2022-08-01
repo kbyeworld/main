@@ -5,7 +5,7 @@ from discord.ext import commands
 
 from utils.json_util import loadjson, savejson
 from utils.respond import send_response
-
+from utils.pan import pan
 
 class DiceCog(commands.Cog):
     def __init__(self, bot):
@@ -48,6 +48,10 @@ class DiceCog(commands.Cog):
                     next_turn = mydict[0]
                 else:
                     next_turn = mydict[(list(mydict).index(interaction.user.id)) + 1]
+
+                pan_data = await pan(data, game_data['players_data'])
+                await (await interaction.channel.fetch_message(int(game_data['pan_msg']))).edit(content="\n".join(pan_data))
+
                 view = discord.ui.View()
                 view.add_item(
                     discord.ui.Button(
