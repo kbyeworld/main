@@ -7,7 +7,7 @@ import discord
 from utils.embed import Embed
 from utils.json_util import loadjson, savejson
 from utils.respond import send_response
-
+from utils.pan import pan
 
 async def marble_game(interaction, players):
     game_data = loadjson("./data/game.json")[
@@ -17,36 +17,26 @@ async def marble_game(interaction, players):
     ]
     province = loadjson(f"./data/game/{game_data['channel_id']}.json")
     game_thread = interaction.guild.get_thread(int(game_data["channel_id"]))
-    player_1, player_1_color = players[0], "🟥"
-    player_2, player_2_color = players[1], "🟩"
+    players_data = {str(players[0]): "🟥", str(players[1]): "🟩"}
     if len(players) == 3:
-        player_3, player_3_color = players[2], "🟪"
-    else:
-        player_3, player_3_color = None, None
-    pan_data = []
-    for data in province["province"]:
-        if data["name"] == "시작":
-            pan_data.append(
-                f"[{player_1_color}, {player_2_color}{f', {player_3_color}' if player_3 else ''}] {data['name']}"
-            )
-        elif data["name"] == "이벤트 카드":
-            pan_data.append(f"[⬜️] 💳 {data['name']}")
-        elif data["name"] == "여행":
-            pan_data.append(f"[⬜️] 🧳 {data['name']}")
-        elif data["name"] == "감옥":
-            pan_data.append(f"[⬜️] 🔒 {data['name']}")
-        else:
-            pan_data.append(f"[⬜️] 🏙️ {data['name']} (소유주 없음, {data['money']})")
-    await game_thread.send("\n".join(pan_data))
+        players_data[str(players[2])] = "🟪"
+
+    province["players_data"] = players_data
+
+    pan_data = await pan(province, players_data)
+    m = await game_thread.send("\n".join(pan_data))
+    province["pan_msg"] = m.id
+
+    savejson(f"./data/game/{game_data['channel_id']}.json", province)
 
     view = discord.ui.View()
     view.add_item(
         discord.ui.Button(
             emoji="🎲",
             label="주사위 던지기",
-            custom_id=f"dice_{player_1}",
+            custom_id=f"dice_{players[0]}",
             style=discord.ButtonStyle.blurple,
         )
     )
 
-    await game_thread.send(f"<@{player_1}>님의 차례입니다.", view=view)
+    await game_thread.send(f"<@{players[0]}>님의 차례입니다.", view=view)
