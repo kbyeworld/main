@@ -25,5 +25,7 @@
         {"name": "이벤트 카드","money": 0,"owner": "System", "users":  []},
         {"name": "안산","money": 22200,"owner": 0, "users":  []},
         {"name": "영덕","money": 22200,"owner": 0, "users":  []}
-    ]
+    ],
+    "players_data": {},
+    "pan_msg": 0
 }
