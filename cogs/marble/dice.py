@@ -61,19 +61,6 @@ class DiceCog(commands.Cog):
                     view=view,
                 )
 
-                if len(view_data) != 0:
-                    def check(inter):
-                        return inter.user.id == interaction.user.id and inter.channel.id == interaction.channel.id and ("buy_" in inter.custom_id or "built_" in inter.custom_id)
-
-                    try:
-                        interaction_check = await self.bot.wait_for(
-                            "interaction", check=check, timeout=60.0
-                        )
-                        print(interaction_check)
-                    except asyncio.TimeoutError:
-                        view.disable_all_items()
-                        await msg.edit_original_message(view=view)
-
                 data = loadjson(f"./data/game/{interaction.channel_id}.json")
                 province = data["province"]
                 province[user_pre_loc_num]["users"].remove(interaction.user.id)
@@ -91,6 +78,19 @@ class DiceCog(commands.Cog):
 
                 pan_data = await pan(data, game_data['players_data'])
                 await (await interaction.channel.fetch_message(int(game_data['pan_msg']))).edit(content="\n".join(pan_data))
+
+                if len(view_data) != 0:
+                    def check(inter):
+                        return inter.user.id == interaction.user.id and inter.channel.id == interaction.channel.id and ("buy_" in inter.custom_id or "built_" in inter.custom_id)
+
+                    try:
+                        interaction_check = await self.bot.wait_for(
+                            "interaction", check=check, timeout=60.0
+                        )
+                        print(interaction_check)
+                    except asyncio.TimeoutError:
+                        view.disable_all_items()
+                        await msg.edit_original_message(view=view)
 
                 view = discord.ui.View()
                 view.add_item(
