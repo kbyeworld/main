@@ -43,6 +43,32 @@ class marble_play(commands.Cog):
         await asyncio.sleep(60)
         await channel.archive(locked=True)
 
+    async def start(self, interaction, user_id, game_thread, game_data, type):
+        self.logger.info(f"⏩ | '{game_thread.id}'방의 게임이 시작되었습니다.")
+        shutil.copyfile(
+            "./data/province.json", f"./data/game/{game_thread.id}.json"
+        )
+        province_data = loadjson(f"./data/game/{game_thread.id}.json")
+        province_data["game_owner"] = user_id
+        province_data["province"][0]["users"] = game_data["players"]
+        savejson(f"./data/game/{game_thread.id}.json", province_data)
+        await (
+            await interaction.channel.fetch_message(
+                int(game_data["channel_id"])
+            )
+        ).edit(
+            embed=Embed.user_footer(
+                Embed.default(
+                    timestamp=datetime.datetime.now(),
+                    title="▶️ 게임 시작",
+                    description="게임 최대 인원 3명이 모여 게임을 자동 시작합니다." if type == "auto" else "호스트가 게임을 시작했습니다.",
+                ),
+                interaction.user,
+            ),
+            view=None,
+        )
+        await marble_game(interaction, players=game_data["players"])
+
     async def account_check(self):
         result = await UserDatabase.find(self.author.id)
         if result == None:
@@ -287,30 +313,7 @@ class marble_play(commands.Cog):
 
                 if len(game_data["players"]) == 3:
                     await game_thread.send("게임 시작 가능 인원인 3명이 모였습니다! 게임을 시작합니다.")
-                    self.logger.info(f"⏩ | '{game_thread.id}'방의 게임이 시작되었습니다.")
-                    shutil.copyfile(
-                        "./data/province.json", f"./data/game/{game_thread.id}.json"
-                    )
-                    province_data = loadjson(f"./data/game/{game_thread.id}.json")
-                    province_data["game_owner"] = user_id
-                    province_data["province"][0]["users"] = game_data["players"]
-                    savejson(f"./data/game/{game_thread.id}.json", province_data)
-                    await (
-                        await interaction.channel.fetch_message(
-                            int(game_data["channel_id"])
-                        )
-                    ).edit(
-                        embed=Embed.user_footer(
-                            Embed.default(
-                                timestamp=datetime.datetime.now(),
-                                title="▶️ 게임 시작",
-                                description="게임 최대 인원 3명이 모여 게임을 자동 시작합니다.",
-                            ),
-                            interaction.user,
-                        ),
-                        view=None,
-                    )
-                    await marble_game(interaction, players=game_data["players"])
+                    await self.start(interaction, user_id, game_thread, game_data, type="auto")
 
             if interaction.custom_id.startswith(
                 "marble_"
@@ -350,31 +353,7 @@ class marble_play(commands.Cog):
                         ephemeral=True,
                     )
                 else:
-                    self.logger.info(f"⏩ | '{game_thread.id}'방의 게임이 시작되었습니다.")
-                    shutil.copyfile(
-                        "./data/province.json", f"./data/game/{game_thread.id}.json"
-                    )
-                    province_data = loadjson(f"./data/game/{game_thread.id}.json")
-                    province_data["game_owner"] = user_id
-                    province_data["province"][0]["users"] = game_data["players"]
-                    savejson(f"./data/game/{game_thread.id}.json", province_data)
-                    await (
-                        await interaction.channel.fetch_message(
-                            int(game_data["channel_id"])
-                        )
-                    ).edit(
-                        embed=Embed.user_footer(
-                            Embed.default(
-                                timestamp=datetime.datetime.now(),
-                                title="▶️ 게임 시작",
-                                description="호스트가 게임을 시작했습니다.",
-                            ),
-                            interaction.user,
-                        ),
-                        view=None,
-                    )
-                    await marble_game(interaction, players=game_data["players"])
-
+                    await self.start(interaction, user_id, game_thread, game_data, type="btn")
 
 def setup(bot):
     bot.add_cog(marble_play(bot))
