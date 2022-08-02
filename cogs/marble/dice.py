@@ -37,14 +37,15 @@ class DiceCog(commands.Cog):
                 view_data = []
                 if game_data['province'][user_now_loc_num]['owner'] != "System":
                     embed.add_field(name="부가 정보", value=f">>> 땅 주인 : {f'''<@{game_data['province'][user_now_loc_num]['owner']}>''' if game_data['province'][user_now_loc_num]['owner'] != 0 else '소유주 없음 (구매 가능)'}")
-                    btn = discord.ui.Button(
-                            emoji="💳",
-                            label="땅 구매하기",
-                            custom_id=f"buy_{interaction.user.id}",
-                            style=discord.ButtonStyle.green,
-                        )
-                    view_data.append(btn)
-                    view.add_item(btn)
+                    if game_data['province'][user_now_loc_num]['owner'] == 0:
+                        btn = discord.ui.Button(
+                                emoji="💳",
+                                label="땅 구매하기",
+                                custom_id=f"buy_{interaction.user.id}",
+                                style=discord.ButtonStyle.green,
+                            )
+                        view_data.append(btn)
+                        view.add_item(btn)
                 elif game_data['province'][user_now_loc_num]['owner'] == interaction.user.id:
                     btn = discord.ui.Button(
                         emoji="🏛️",
@@ -87,7 +88,23 @@ class DiceCog(commands.Cog):
                         interaction_check = await self.bot.wait_for(
                             "interaction", check=check, timeout=60.0
                         )
-                        print(interaction_check)
+                        if interaction_check.custom_id.startswith("buy_"):
+                            view.disable_all_items()
+                            if int(data["players_data"][str(interaction.user.id)]["money"]) >= data['province'][user_now_loc_num]["money"]:
+                                data["players_data"][str(interaction.user.id)]["money"] = str(int(data["players_data"][str(interaction.user.id)]["money"]) - data['province'][user_now_loc_num]["money"])
+                                data["province"][user_now_loc_num]["owner"] = interaction.user.id
+                                embed2 = Embed.default(timestamp=datetime.datetime.now(), title="✅ 구매 성공", description=f"`{user_new_loc}` 구매를 성공하였습니다!")
+                                Embed.user_footer(embed2, interaction.user)
+                                savejson(f"./data/game/{interaction.channel_id}.json", data)
+                                await send_response(interaction_check, content=None, embeds=[embed2], ephemeral=True)
+                                await msg.edit_original_message(embeds=[embed, embed2], view=view)
+                                pan_data = await pan(data, data['players_data'])
+                                await (await interaction.channel.fetch_message(int(data['pan_msg']))).edit(content="\n".join(pan_data))
+                            else:
+                                embed2 = Embed.default(timestamp=datetime.datetime.now(), title="❎ 구매 실패", description="소유한 돈이 부족하여 땅을 구매하지 못했습니다.")
+                                Embed.user_footer(embed2, interaction.user)
+                                await send_response(interaction_check, content=None, embeds=[embed2], ephemeral=True)
+                                await msg.edit_original_message(embeds=[embed, embed2], view=view)
                     except asyncio.TimeoutError:
                         view.disable_all_items()
                         await msg.edit_original_message(view=view)
