@@ -3,7 +3,7 @@
 async def pan(province, players):
     pan_data = []
     for data in province["province"]:
-        players_emoji_list = [players[str(user)] for user in data['users']]
+        players_emoji_list = [players[str(user)]["color"] for user in data['users']]
         if len(players_emoji_list) == 0:
             players_emoji_list.append("⬜️")
         if data["name"] == "시작":
