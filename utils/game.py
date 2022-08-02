@@ -17,9 +17,9 @@ async def marble_game(interaction, players):
     ]
     province = loadjson(f"./data/game/{game_data['channel_id']}.json")
     game_thread = interaction.guild.get_thread(int(game_data["channel_id"]))
-    players_data = {str(players[0]): "🟥", str(players[1]): "🟩"}
+    players_data = {str(players[0]): {"color": "🟥", "money": "5000000", "eventCard": []}, str(players[1]): {"color": "🟩", "money": "5000000", "eventCard": []}}
     if len(players) == 3:
-        players_data[str(players[2])] = "🟪"
+        players_data[str(players[2])] = {"color": "🟪", "money": "5000000", "eventCard": []}
 
     province["players_data"] = players_data
 
