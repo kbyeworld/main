@@ -16,3 +16,6 @@ class Setting:
     class database:
         uri = "mongodb://localhost:27017"  # MongoDB 데이터베이스에 접속할 수 있는 URI를 입력합니다.
         name = "kbyeworld"  # MongoDB 데이터베이스 이름을 입력합니다.
+
+    class social:
+        koreanbots = "" # 한국 디스코드 리스트 (https://koreanbots.dev)의 토큰을 입력합니다. 없으면 비워주세요.
