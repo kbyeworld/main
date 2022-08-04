@@ -101,8 +101,11 @@ class Listener(commands.Cog):
         elif isinstance(error, discord.errors.CheckFailure):
             return
 
-        elif str(error) == "" or error == None or str(error) == None:
-            return
+        elif isinstance(error, commands.MaxConcurrencyReached):
+            embed = Embed.warn(
+                timestamp=datetime.datetime.now(), description="처리 대기중인 명령어가 있습니다."
+            )
+            Embed.user_footer(embed, ctx.author)
 
         else:
             embed = Embed.error(
