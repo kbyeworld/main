@@ -150,7 +150,6 @@ class User(commands.Cog):
                 )
             )
             await ctx.respond("https://discord.gg/WzFc9CYeJZ", embed=embed, view=view)
-            # await ctx.respond("투표를 하지 않으셨어요. https://discord.gg/WzFc9CYeJZ")
 
     @commands.slash_command(
         name="탈퇴",
