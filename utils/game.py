@@ -39,4 +39,10 @@ async def marble_game(interaction, players):
         )
     )
 
-    await game_thread.send(f"<@{players[0]}>님의 차례입니다.", view=view)
+    dice_m = await game_thread.send(f"<@{players[0]}>님의 차례입니다.", view=view)
+
+    try:
+        await m.pin()
+        await dice_m.pin()
+    except discord.Forbidden:
+        pass
