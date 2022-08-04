@@ -71,6 +71,7 @@ class marble_play(commands.Cog):
 
     async def account_check(self):
         result = await UserDatabase.find(self.author.id)
+        print(result)
         if result == None:
             embed = Embed.perm_warn(
                 timestamp=datetime.datetime.now(),
@@ -82,10 +83,9 @@ class marble_play(commands.Cog):
         return True
 
     @commands.slash_command(
-        name="시작", description="마블 게임을 시작합니다.", checks=[account_check]
+        name="시작", description="마블 게임을 시작합니다.", checks=[account_check, is_text_channel]
     )
     @commands.max_concurrency(1, commands.BucketType.user)
-    @commands.check(is_text_channel)
     async def play_start(
         self,
         ctx,
@@ -159,8 +159,7 @@ class marble_play(commands.Cog):
         except Exception as error:
             pass
 
-    @commands.slash_command(name="종료", description="[게임 생성자 전용] 게임을 종료합니다.")
-    @commands.check(is_thread)
+    @commands.slash_command(name="종료", description="[게임 생성자 전용] 게임을 종료합니다.", checks=[is_thread, account_check])
     async def finish_game(self, ctx):
         game_data = loadjson("./data/game/{}.json".format(ctx.channel.id))
         if ctx.author.id != int(game_data["game_owner"]):
@@ -188,9 +187,8 @@ class marble_play(commands.Cog):
         await ctx.respond("게임을 종료하시겠습니까?", view=view)
 
     @commands.slash_command(
-        name="강제종료", description="게임 생성자가 오프라인일때 일반 참가자가 강제로 종료할수 있습니다."
+        name="강제종료", description="게임 생성자가 오프라인일때 일반 참가자가 강제로 종료할수 있습니다.", checks=[account_check, is_thread],
     )
-    @commands.check(is_thread)
     async def force_finish_game(self, ctx):
         await ctx.defer(ephemeral=True)
         try:
