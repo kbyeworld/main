@@ -60,6 +60,7 @@ class DiceCog(commands.Cog):
                     content=f"<@{interaction.user.id}>",
                     embed=Embed.user_footer(embed, interaction.user),
                     view=view,
+                    delete_after=(5 if game_data['province'][user_now_loc_num]['owner'] == "System" else None),
                 )
 
                 data = loadjson(f"./data/game/{interaction.channel_id}.json")
@@ -96,18 +97,18 @@ class DiceCog(commands.Cog):
                                 embed2 = Embed.default(timestamp=datetime.datetime.now(), title="✅ 구매 성공", description=f"`{user_new_loc}` 구매를 성공하였습니다!")
                                 Embed.user_footer(embed2, interaction.user)
                                 savejson(f"./data/game/{interaction.channel_id}.json", data)
-                                await send_response(interaction_check, content=None, embeds=[embed2], ephemeral=True)
-                                await msg.edit_original_message(embeds=[embed, embed2], view=view)
+                                await send_response(interaction_check, content=None, embeds=[embed2], ephemeral=True, delete_after=5)
+                                await msg.edit_original_response(embeds=[embed, embed2], view=view, delete_after=5)
                                 pan_data = await pan(data, data['players_data'])
                                 await (await interaction.channel.fetch_message(int(data['pan_msg']))).edit(content="\n".join(pan_data))
                             else:
                                 embed2 = Embed.default(timestamp=datetime.datetime.now(), title="❎ 구매 실패", description="소유한 돈이 부족하여 땅을 구매하지 못했습니다.")
                                 Embed.user_footer(embed2, interaction.user)
-                                await send_response(interaction_check, content=None, embeds=[embed2], ephemeral=True)
-                                await msg.edit_original_message(embeds=[embed, embed2], view=view)
+                                await send_response(interaction_check, content=None, embeds=[embed2], ephemeral=True, delete_after=5)
+                                await msg.edit_original_response(embeds=[embed, embed2], view=view, delete_after=5)
                     except asyncio.TimeoutError:
                         view.disable_all_items()
-                        await msg.edit_original_message(view=view)
+                        await msg.edit_original_response(view=view, delete_after=5)
 
                 view = discord.ui.View()
                 view.add_item(
