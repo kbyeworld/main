@@ -80,7 +80,7 @@ class Mail_Form(discord.ui.Modal):
             )
             Embed.user_footer(embed, interaction.user)
             try:
-                return await msg.edit_original_message(
+                return await msg.edit_original_response(
                     content=None,
                     embed=embed,
                     view=None,
@@ -94,7 +94,7 @@ class Mail_Form(discord.ui.Modal):
                 description="사용자님의 요청으로 취소되었어요.",
             )
             Embed.user_footer(embed, interaction.user)
-            return await msg.edit_original_message(content=None, embed=embed, view=None)
+            return await msg.edit_original_response(content=None, embed=embed, view=None)
 
         allu = await UserDatabase.list({"deleted": False})
         json = {
@@ -118,7 +118,7 @@ class Mail_Form(discord.ui.Modal):
             description=f"``{len(allu)}``명의 유저 중 ``{success}``명의 유저에게 발송을 완료했어요.",
         )
         Embed.user_footer(embed, interaction.user)
-        await msg.edit_original_message(content=None, embed=embed, view=None)
+        await msg.edit_original_response(content=None, embed=embed, view=None)
 
 
 class mail(commands.Cog, name="메일"):
