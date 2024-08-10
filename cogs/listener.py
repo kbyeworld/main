@@ -24,7 +24,7 @@ class Listener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_application_command(self, ctx):
-        self.logger.info(f"💻 | {ctx.author}({ctx.author.id}) - '/{ctx.command}' 명령어 사용")
+        self.logger.info(f"💻 | {ctx.author.global_name}({ctx.author.id}) - '/{ctx.command}' 명령어 사용")
         user = await UserDatabase.find(ctx.author.id)
         if user != None:
             if (
@@ -113,7 +113,7 @@ class Listener(commands.Cog):
                 description=f"```py\n{error}\n```",
             )
             Embed.user_footer(embed, ctx.author)
-            self.logger.error(f"❌ | {ctx.author}({ctx.author.id}) - {error}")
+            self.logger.error(f"❌ | {ctx.author.global_name}({ctx.author.id}) - {error}")
 
         try:
             return await ctx.respond(

@@ -42,7 +42,7 @@ class Embed(discord.Embed):
 
     def user_footer(embed, user):
         return embed.set_footer(
-            text=user,
+            text=str(user.global_name),
             icon_url=user.display_avatar,
         )
 
