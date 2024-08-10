@@ -39,14 +39,14 @@ class Task(commands.Cog):
                 ) as res:
                     if res.status != 200:
                         self.logger.error(
-                            f"❌ 한디리 서버수 업데이트 실패 ({(await res.json())['message']})"
+                            f"❌ | 한디리 서버수 업데이트 실패 ({(await res.json())['message']})"
                         )
                     else:
                         self.logger.info(
-                            f"✅ 한디리 서버수 업데이트 성공 ({(await res.json())['message']})"
+                            f"✅ | 한디리 서버수 업데이트 성공 ({(await res.json())['message']})"
                         )
             except Exception as error:
-                self.logger.error(f"❌ 한디리 서버수 업데이트 중 오류 발생 ({error})")
+                self.logger.error(f"❌ | 한디리 서버수 업데이트 중 오류 발생 ({error})")
         await session.close()
 
 def setup(bot):
