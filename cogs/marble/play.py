@@ -111,11 +111,11 @@ class marble_play(commands.Cog):
             f"<a:loading:911450437209706556> {'이 서버에서' if kind == 'Server' else '글로벌 멀티'} 게임 시작을 준비하고 있어요..."
         )
         thread = await ctx.channel.create_thread(
-            name=f"{ctx.author}님의 마블게임방", message=start_msg
+            name=f"{ctx.author.global_name}님의 마블게임방", message=start_msg
         )
         embed = Embed.default(
             title="🚩 게임 시작하기",
-            description=f"{ctx.author}님이 마블 게임을 시작하셨습니다.\n참가하시려면 아래의 버튼을 눌러주세요.\n\n게임 생성자가 ``참가하기``를 클릭할 경우, 게임이 종료됩니다.",
+            description=f"{ctx.author.global_name}님이 마블 게임을 시작하셨습니다.\n참가하시려면 아래의 버튼을 눌러주세요.\n\n게임 생성자가 ``참가하기``를 클릭할 경우, 게임이 종료됩니다.",
             timestamp=datetime.datetime.now(),
         )
         Embed.user_footer(embed, ctx.author)
