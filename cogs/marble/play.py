@@ -71,7 +71,6 @@ class marble_play(commands.Cog):
 
     async def account_check(self):
         result = await UserDatabase.find(self.author.id)
-        print(result)
         if result == None:
             embed = Embed.perm_warn(
                 timestamp=datetime.datetime.now(),
