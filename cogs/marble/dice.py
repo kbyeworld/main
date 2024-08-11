@@ -69,6 +69,19 @@ class DiceCog(commands.Cog):
                 province[user_now_loc_num]["users"].append(interaction.user.id)
                 savejson(f"./data/game/{interaction.channel_id}.json", data)
 
+                diceview = discord.ui.View()
+                diceview.add_item(
+                    discord.ui.Button(
+                        emoji="🎲",
+                        label="주사위 던지기",
+                        custom_id=f"dice_0",
+                        style=discord.ButtonStyle.blurple,
+                    )
+                )
+                await (
+                    await interaction.channel.fetch_message(int(interaction.message.id))
+                ).edit(content=f"<@{interaction.user.id}>님의 차례입니다.", view=diceview)
+
                 mydict = loadjson("./data/game.json")[game_data["game_owner"]][
                     "players"
                 ]
@@ -87,7 +100,7 @@ class DiceCog(commands.Cog):
 
                     try:
                         interaction_check = await self.bot.wait_for(
-                            "interaction", check=check, timeout=60.0
+                            "interaction", check=check, timeout=15.0
                         )
                         if interaction_check.custom_id.startswith("buy_"):
                             view.disable_all_items()
