@@ -268,7 +268,7 @@ class marble_play(commands.Cog):
                     del mydict[user_id]
                     savejson("./data/game.json", mydict)
                     self.logger.info(
-                        f"❌ | {interaction.user}의 '{game_thread.id}'방이 취소되었습니다."
+                        f"❌ | {interaction.user.global_name}의 '{game_thread.id}'방이 취소되었습니다."
                     )
                     return await send_response(
                         interaction, content=f"게임이 취소되었어요.", ephemeral=True
@@ -284,7 +284,7 @@ class marble_play(commands.Cog):
                         pass
                     savejson("./data/game.json", mydict)
                     self.logger.info(
-                        f"📤 | {interaction.user}가 '{game_thread.id}'방에서 퇴장하였습니다."
+                        f"📤 | {interaction.user.global_name}가 '{game_thread.id}'방에서 퇴장하였습니다."
                     )
                     return await send_response(
                         interaction,
@@ -301,7 +301,7 @@ class marble_play(commands.Cog):
                     interaction.guild.get_member(interaction.user.id)
                 )
                 self.logger.info(
-                    f"📥 | {interaction.user}가 '{game_thread.id}'방에 입장하였습니다."
+                    f"📥 | {interaction.user.global_name}가 '{game_thread.id}'방에 입장하였습니다."
                 )
                 await send_response(
                     interaction, content=f"참가 처리가 완료되었어요.", ephemeral=True
