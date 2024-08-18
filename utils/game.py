@@ -39,7 +39,12 @@ async def marble_game(interaction, players):
         )
     )
 
-    dice_m = await game_thread.send(f"<@{players[0]}>님의 차례입니다.", view=view)
+    colorInfo = f"{players_data[str(players[0])]['color']} : <@{str(players[0])}>\n{players_data[str(players[1])]['color']} : <@{str(players[1])}>"
+    if len(players) == 3:
+        colorInfo += f"\n{players_data[str(players[2])]['color']} : <@{str(players[2])}>"
+    infoEmbed = Embed.default(description=f"{colorInfo}")
+
+    dice_m = await game_thread.send(f"<@{players[0]}>님의 차례입니다.", embed=infoEmbed, view=view)
 
     try:
         await m.pin()

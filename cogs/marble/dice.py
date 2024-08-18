@@ -132,9 +132,15 @@ class DiceCog(commands.Cog):
                         style=discord.ButtonStyle.blurple,
                     )
                 )
+
+                colorInfo = f"{mydict[str(mydict[0])]['color']} : <@{str(mydict[0])}>\n{mydict[str(mydict[1])]['color']} : <@{str(mydict[1])}>"
+                if len(mydict) == 3:
+                    colorInfo += f"\n{mydict[str(mydict[2])]['color']} : <@{str(mydict[2])}>"
+                infoEmbed = Embed.default(description=f"{colorInfo}")
+
                 await (
                     await interaction.channel.fetch_message(int(interaction.message.id))
-                ).edit(content=f"<@{next_turn}>님의 차례입니다.", view=view)
+                ).edit(content=f"<@{next_turn}>님의 차례입니다.", embed=infoEmbed, view=view)
 
             else:
                 await send_response(
