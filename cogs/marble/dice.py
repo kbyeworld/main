@@ -151,10 +151,16 @@ class DiceCog(commands.Cog):
                     )
                 )
 
-                colorInfo = f"{mydict[str(mydict[0])]['color']} : <@{str(mydict[0])}>\n{mydict[str(mydict[1])]['color']} : <@{str(mydict[1])}>"
-                if len(mydict) == 3:
-                    colorInfo += f"\n{mydict[str(mydict[2])]['color']} : <@{str(mydict[2])}>"
-                infoEmbed = Embed.default(description=f"{colorInfo}")
+                infoEmbed = Embed.default()
+
+                count = 1
+                for player in data['players_data']:
+                    infoEmbed.add_field(
+                        name=f"{data['players_data'][player]['color']} Player {count}",
+                        value=f"유저 : <@{player}>\n돈 : ``{(format(int(data['players_data'][player]['money']), ','))}원``",
+                        inline=False,
+                    )
+                    count += 1
 
                 await (
                     await interaction.channel.fetch_message(int(interaction.message.id))
