@@ -39,10 +39,16 @@ async def marble_game(interaction, players):
         )
     )
 
-    colorInfo = f"{players_data[str(players[0])]['color']} : <@{str(players[0])}>\n{players_data[str(players[1])]['color']} : <@{str(players[1])}>"
-    if len(players) == 3:
-        colorInfo += f"\n{players_data[str(players[2])]['color']} : <@{str(players[2])}>"
-    infoEmbed = Embed.default(description=f"{colorInfo}")
+    infoEmbed = Embed.default()
+
+    count = 1
+    for player in players_data:
+        infoEmbed.add_field(
+            name=f"{players_data[player]['color']} Player {count}",
+            value=f"유저 : <@{player}>\n돈 : ``{(format(int(players_data[player]['money']), ','))}원``",
+            inline=False,
+        )
+        count += 1
 
     dice_m = await game_thread.send(f"<@{players[0]}>님의 차례입니다.", embed=infoEmbed, view=view)
 
