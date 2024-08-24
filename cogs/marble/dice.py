@@ -44,8 +44,19 @@ class DiceCog(commands.Cog):
                                 custom_id=f"buy_{interaction.user.id}",
                                 style=discord.ButtonStyle.green,
                             )
+                        btn2 = discord.ui.Button(
+                                emoji="▶️",
+                                label="넘어가기",
+                                custom_id=f"pass_{interaction.user.id}",
+                                style=discord.ButtonStyle.gray,
+                            )
                         view_data.append(btn)
                         view.add_item(btn)
+                        view_data.append(btn2)
+                        view.add_item(btn2)
+
+                    if game_data['province'][user_now_loc_num]['owner'] != 0 and game_data['province'][user_now_loc_num]['owner'] != interaction.user.id:
+                        embed.add_field(name="통행료 지불 완료", value=f">>> <@{game_data['province'][user_now_loc_num]['owner']}>님께 통행료를 지불하였습니다.")
                 elif game_data['province'][user_now_loc_num]['owner'] == interaction.user.id:
                     btn = discord.ui.Button(
                         emoji="🏛️",
@@ -55,6 +66,7 @@ class DiceCog(commands.Cog):
                     )
                     view_data.append(btn)
                     view.add_item(btn)
+
                 msg = await send_response(
                     interaction,
                     content=f"<@{interaction.user.id}>",
@@ -96,7 +108,7 @@ class DiceCog(commands.Cog):
 
                 if len(view_data) != 0:
                     def check(inter):
-                        return inter.user.id == interaction.user.id and inter.channel.id == interaction.channel.id and ("buy_" in inter.custom_id or "built_" in inter.custom_id)
+                        return inter.user.id == interaction.user.id and inter.channel.id == interaction.channel.id and ("buy_" in inter.custom_id or "built_" in inter.custom_id or "pass_" in inter.custom_id)
 
                     try:
                         interaction_check = await self.bot.wait_for(
@@ -119,6 +131,12 @@ class DiceCog(commands.Cog):
                                 Embed.user_footer(embed2, interaction.user)
                                 await send_response(interaction_check, content=None, embeds=[embed2], ephemeral=True, delete_after=5)
                                 await msg.edit_original_response(embeds=[embed, embed2], view=view, delete_after=5)
+                        if interaction_check.custom_id.startswith("pass_"):
+                            view.disable_all_items()
+                            embed2 = Embed.default(timestamp=datetime.datetime.now(), title="▶️ 구매 넘김", description=f"`{user_new_loc}`를 구매하지 않았습니다.")
+                            Embed.user_footer(embed2, interaction.user)
+                            await send_response(interaction_check, content=None, embeds=[embed2], ephemeral=True, delete_after=5)
+                            await msg.edit_original_response(embeds=[embed, embed2], view=view, delete_after=5)
                     except asyncio.TimeoutError:
                         view.disable_all_items()
                         await msg.edit_original_response(view=view, delete_after=5)
