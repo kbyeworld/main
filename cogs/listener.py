@@ -19,7 +19,7 @@ class Listener(commands.Cog):
         self.logger.info(f"🚥 | Ready : {self.bot.user}")
         await self.bot.change_presence(
             status=discord.Status.online,
-            activity=discord.Game(name=f"/정보 | 🍽️ 오늘도 맛있는 하루!"),
+            activity=discord.Activity(type=discord.ActivityType.custom, name="바이마블", state=f"/정보 | 🍽️ 오늘도 맛있는 하루!"),
         )
 
     @commands.Cog.listener()
