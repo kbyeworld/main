@@ -18,6 +18,7 @@ class DiceCog(commands.Cog):
     async def on_interaction(self, interaction: discord.Interaction):
         if interaction.is_component() and interaction.custom_id.startswith("dice_"):
             if str(interaction.user.id) == interaction.custom_id.replace("dice_", ""):
+                deletePass = False
                 con = str(random.randint(1, 6))
                 game_data = loadjson(f"./data/game/{interaction.channel_id}.json")
                 user_loc_num = 0
@@ -35,6 +36,7 @@ class DiceCog(commands.Cog):
                 embed = Embed.default(description=f"<@{interaction.user.id}>님의 주사위는 ``{con}``입니다!\n현재 위치는 ``{user_new_loc}``입니다.", timestamp=datetime.datetime.now())
                 view = discord.ui.View()
                 view_data = []
+
                 if game_data['province'][user_now_loc_num]['owner'] != "System":
                     embed.add_field(name="부가 정보", value=f">>> 땅 주인 : {f'''<@{game_data['province'][user_now_loc_num]['owner']}>''' if game_data['province'][user_now_loc_num]['owner'] != 0 else '소유주 없음 (구매 가능)'}")
                     if game_data['province'][user_now_loc_num]['owner'] == 0:
@@ -56,7 +58,11 @@ class DiceCog(commands.Cog):
                         view.add_item(btn2)
 
                     if game_data['province'][user_now_loc_num]['owner'] != 0 and game_data['province'][user_now_loc_num]['owner'] != interaction.user.id:
-                        embed.add_field(name="통행료 지불 완료", value=f">>> <@{game_data['province'][user_now_loc_num]['owner']}>님께 통행료를 지불하였습니다.")
+                        embed.add_field(name="통행료 지불 완료", value=f">>> <@{game_data['province'][user_now_loc_num]['owner']}>님께 통행료를 지불하였습니다.", inline=False)
+                        game_data["players_data"][str(interaction.user.id)]["money"] = str(int(game_data["players_data"][str(interaction.user.id)]["money"]) - game_data['province'][user_now_loc_num]["money"])
+                        game_data["players_data"][str(game_data['province'][user_now_loc_num]['owner'])]["money"] = str(int(game_data["players_data"][str(game_data['province'][user_now_loc_num]['owner'])]["money"]) + game_data['province'][user_now_loc_num]["money"])
+                        deletePass = True
+
                 elif game_data['province'][user_now_loc_num]['owner'] == interaction.user.id:
                     btn = discord.ui.Button(
                         emoji="🏛️",
@@ -72,14 +78,13 @@ class DiceCog(commands.Cog):
                     content=f"<@{interaction.user.id}>",
                     embed=Embed.user_footer(embed, interaction.user),
                     view=view,
-                    delete_after=(5 if game_data['province'][user_now_loc_num]['owner'] == "System" else None),
+                    delete_after=(5 if (game_data['province'][user_now_loc_num]['owner'] == "System" or deletePass == True) else None),
                 )
 
-                data = loadjson(f"./data/game/{interaction.channel_id}.json")
-                province = data["province"]
+                province = game_data["province"]
                 province[user_pre_loc_num]["users"].remove(interaction.user.id)
                 province[user_now_loc_num]["users"].append(interaction.user.id)
-                savejson(f"./data/game/{interaction.channel_id}.json", data)
+                savejson(f"./data/game/{interaction.channel_id}.json", game_data)
 
                 diceview = discord.ui.View()
                 diceview.add_item(
@@ -103,7 +108,7 @@ class DiceCog(commands.Cog):
                 else:
                     next_turn = mydict[(list(mydict).index(interaction.user.id)) + 1]
 
-                pan_data = await pan(data, game_data['players_data'])
+                pan_data = await pan(game_data, game_data['players_data'])
                 await (await interaction.channel.fetch_message(int(game_data['pan_msg']))).edit(content="\n".join(pan_data))
 
                 if len(view_data) != 0:
@@ -116,16 +121,16 @@ class DiceCog(commands.Cog):
                         )
                         if interaction_check.custom_id.startswith("buy_"):
                             view.disable_all_items()
-                            if int(data["players_data"][str(interaction.user.id)]["money"]) >= data['province'][user_now_loc_num]["money"]:
-                                data["players_data"][str(interaction.user.id)]["money"] = str(int(data["players_data"][str(interaction.user.id)]["money"]) - data['province'][user_now_loc_num]["money"])
-                                data["province"][user_now_loc_num]["owner"] = interaction.user.id
+                            if int(game_data["players_data"][str(interaction.user.id)]["money"]) >= game_data['province'][user_now_loc_num]["money"]:
+                                game_data["players_data"][str(interaction.user.id)]["money"] = str(int(game_data["players_data"][str(interaction.user.id)]["money"]) - game_data['province'][user_now_loc_num]["money"])
+                                game_data["province"][user_now_loc_num]["owner"] = interaction.user.id
                                 embed2 = Embed.default(timestamp=datetime.datetime.now(), title="✅ 구매 성공", description=f"`{user_new_loc}` 구매를 성공하였습니다!")
                                 Embed.user_footer(embed2, interaction.user)
-                                savejson(f"./data/game/{interaction.channel_id}.json", data)
+                                savejson(f"./data/game/{interaction.channel_id}.json", game_data)
                                 await send_response(interaction_check, content=None, embeds=[embed2], ephemeral=True, delete_after=5)
                                 await msg.edit_original_response(embeds=[embed, embed2], view=view, delete_after=5)
-                                pan_data = await pan(data, data['players_data'])
-                                await (await interaction.channel.fetch_message(int(data['pan_msg']))).edit(content="\n".join(pan_data))
+                                pan_data = await pan(game_data, game_data['players_data'])
+                                await (await interaction.channel.fetch_message(int(game_data['pan_msg']))).edit(content="\n".join(pan_data))
                             else:
                                 embed2 = Embed.default(timestamp=datetime.datetime.now(), title="❎ 구매 실패", description="소유한 돈이 부족하여 땅을 구매하지 못했습니다.")
                                 Embed.user_footer(embed2, interaction.user)
@@ -154,10 +159,10 @@ class DiceCog(commands.Cog):
                 infoEmbed = Embed.default()
 
                 count = 1
-                for player in data['players_data']:
+                for player in game_data['players_data']:
                     infoEmbed.add_field(
-                        name=f"{data['players_data'][player]['color']} Player {count}",
-                        value=f"유저 : <@{player}>\n돈 : ``{(format(int(data['players_data'][player]['money']), ','))}원``",
+                        name=f"{game_data['players_data'][player]['color']} Player {count}",
+                        value=f"유저 : <@{player}>\n돈 : ``{(format(int(game_data['players_data'][player]['money']), ','))}원``",
                         inline=False,
                     )
                     count += 1
