@@ -36,32 +36,60 @@ class DiceCog(commands.Cog):
                 embed = Embed.default(description=f"<@{interaction.user.id}>님의 주사위는 ``{con}``입니다!\n현재 위치는 ``{user_new_loc}``입니다.", timestamp=datetime.datetime.now())
                 view = discord.ui.View()
                 view_data = []
+                stopType = 0 # 0 : 구매, 1 : 건설, 2 : 통행료 지불
 
                 if game_data['province'][user_now_loc_num]['owner'] != "System":
                     embed.add_field(name="부가 정보", value=f">>> 땅 주인 : {f'''<@{game_data['province'][user_now_loc_num]['owner']}>''' if game_data['province'][user_now_loc_num]['owner'] != 0 else '소유주 없음 (구매 가능)'}")
                     if game_data['province'][user_now_loc_num]['owner'] == 0:
                         btn = discord.ui.Button(
-                                emoji="💳",
-                                label="땅 구매하기",
-                                custom_id=f"buy_{interaction.user.id}",
-                                style=discord.ButtonStyle.green,
-                            )
+                            emoji="💳",
+                            label="땅 구매하기",
+                            custom_id=f"buy_{interaction.user.id}",
+                            style=discord.ButtonStyle.green,
+                        )
                         btn2 = discord.ui.Button(
-                                emoji="▶️",
-                                label="넘어가기",
-                                custom_id=f"pass_{interaction.user.id}",
-                                style=discord.ButtonStyle.gray,
-                            )
+                            emoji="▶️",
+                            label="넘어가기",
+                            custom_id=f"pass_{interaction.user.id}",
+                            style=discord.ButtonStyle.gray,
+                        )
                         view_data.append(btn)
                         view.add_item(btn)
                         view_data.append(btn2)
                         view.add_item(btn2)
+                        stopType = 0
 
                     if game_data['province'][user_now_loc_num]['owner'] != 0 and game_data['province'][user_now_loc_num]['owner'] != interaction.user.id:
-                        embed.add_field(name="통행료 지불 완료", value=f">>> <@{game_data['province'][user_now_loc_num]['owner']}>님께 통행료를 지불하였습니다.", inline=False)
-                        game_data["players_data"][str(interaction.user.id)]["money"] = str(int(game_data["players_data"][str(interaction.user.id)]["money"]) - game_data['province'][user_now_loc_num]["money"])
-                        game_data["players_data"][str(game_data['province'][user_now_loc_num]['owner'])]["money"] = str(int(game_data["players_data"][str(game_data['province'][user_now_loc_num]['owner'])]["money"]) + game_data['province'][user_now_loc_num]["money"])
-                        deletePass = True
+                        eventCard = False
+                        for i in game_data["players_data"][str(interaction.user.id)]["eventCard"]:
+                            if i["id"] == "billingPass":
+                                eventCard = True
+
+                        if eventCard == True:
+                            stopType = 2
+                            embed.add_field(name="통행료 지불 필요", value=f">>> 이 지역은 통행료 지불이 필요합니다. 지불 방식을 선택해주세요.", inline=False)
+                            btn = discord.ui.Button(
+                                emoji="💵",
+                                label="통행료 지불하기",
+                                custom_id=f"bill_{interaction.user.id}",
+                                style=discord.ButtonStyle.blurple,
+                            )
+                            btn2 = discord.ui.Button(
+                                emoji="💳",
+                                label="통행료 면제 이용권 사용하기",
+                                custom_id=f"billpass_{interaction.user.id}",
+                                style=discord.ButtonStyle.blurple,
+                            )
+                            view_data.append(btn)
+                            view.add_item(btn)
+                            view_data.append(btn2)
+                            view.add_item(btn2)
+
+                        else:
+                            embed.add_field(name="통행료 지불 완료", value=f">>> <@{game_data['province'][user_now_loc_num]['owner']}>님에게 통행료를 지불하였습니다.", inline=False)
+                            game_data["players_data"][str(interaction.user.id)]["money"] = str(int(game_data["players_data"][str(interaction.user.id)]["money"]) - game_data['province'][user_now_loc_num]["money"])
+                            game_data["players_data"][str(game_data['province'][user_now_loc_num]['owner'])]["money"] = str(int(game_data["players_data"][str(game_data['province'][user_now_loc_num]['owner'])]["money"]) + game_data['province'][user_now_loc_num]["money"])
+                            deletePass = True
 
                 elif game_data['province'][user_now_loc_num]['owner'] == interaction.user.id:
                     btn = discord.ui.Button(
@@ -72,6 +100,11 @@ class DiceCog(commands.Cog):
                     )
                     view_data.append(btn)
                     view.add_item(btn)
+                    stopType = 1
+                    deletePass = True
+
+                # elif game_data['province'][user_now_loc_num]['owner'] == "System":
+                #     embed.add_field(name="시스템 땅", value=f">>> 시스템 땅입니다. 구매할 수 없습니다.", inline=False)
 
                 msg = await send_response(
                     interaction,
@@ -113,7 +146,7 @@ class DiceCog(commands.Cog):
 
                 if len(view_data) != 0:
                     def check(inter):
-                        return inter.user.id == interaction.user.id and inter.channel.id == interaction.channel.id and ("buy_" in inter.custom_id or "built_" in inter.custom_id or "pass_" in inter.custom_id)
+                        return inter.user.id == interaction.user.id and inter.channel.id == interaction.channel.id and ("buy_" in inter.custom_id or "built_" in inter.custom_id or "pass_" in inter.custom_id or "bill" in inter.custom_id or "billpass_" in inter.custom_id)
 
                     try:
                         interaction_check = await self.bot.wait_for(
@@ -136,15 +169,47 @@ class DiceCog(commands.Cog):
                                 Embed.user_footer(embed2, interaction.user)
                                 await send_response(interaction_check, content=None, embeds=[embed2], ephemeral=True, delete_after=5)
                                 await msg.edit_original_response(embeds=[embed, embed2], view=view, delete_after=5)
+
                         if interaction_check.custom_id.startswith("pass_"):
                             view.disable_all_items()
                             embed2 = Embed.default(timestamp=datetime.datetime.now(), title="▶️ 구매 넘김", description=f"`{user_new_loc}`를 구매하지 않았습니다.")
                             Embed.user_footer(embed2, interaction.user)
                             await send_response(interaction_check, content=None, embeds=[embed2], ephemeral=True, delete_after=5)
                             await msg.edit_original_response(embeds=[embed, embed2], view=view, delete_after=5)
+
+                        if interaction_check.custom_id.startswith("bill_"):
+                            view.disable_all_items()
+                            game_data["players_data"][str(interaction.user.id)]["money"] = str(int(game_data["players_data"][str(interaction.user.id)]["money"]) - game_data['province'][user_now_loc_num]["money"])
+                            game_data["players_data"][str(game_data['province'][user_now_loc_num]['owner'])]["money"] = str(int(game_data["players_data"][str(game_data['province'][user_now_loc_num]['owner'])]["money"]) + game_data['province'][user_now_loc_num]["money"])
+                            savejson(f"./data/game/{interaction.channel_id}.json", game_data)
+                            embed2 = Embed.default(timestamp=datetime.datetime.now(), title="💵 지불 완료", description=f" <@{game_data['province'][user_now_loc_num]['owner']}>님에게 통행료를 지불하였습니다.")
+                            Embed.user_footer(embed2, interaction.user)
+                            await send_response(interaction_check, content=None, embeds=[embed2], ephemeral=True, delete_after=5)
+                            await msg.edit_original_response(embeds=[embed, embed2], view=view, delete_after=5)
+
+                        if interaction_check.custom_id.startswith("billpass_"):
+                            view.disable_all_items()
+                            newCard = []
+                            for i in game_data["players_data"][str(interaction.user.id)]["eventCard"]:
+                                if i["id"] != "billingPass": newCard.append(i)
+                            game_data["players_data"][str(interaction.user.id)]["eventCard"] = newCard
+                            savejson(f"./data/game/{interaction.channel_id}.json", game_data)
+                            embed2 = Embed.default(timestamp=datetime.datetime.now(), title="💳 카드 사용 완료", description=f"이벤트 카드를 사용하여 지불을 면제받았습니다.")
+                            Embed.user_footer(embed2, interaction.user)
+                            await send_response(interaction_check, content=None, embeds=[embed2], ephemeral=True, delete_after=5)
+                            await msg.edit_original_response(embeds=[embed, embed2], view=view, delete_after=5)
+
                     except asyncio.TimeoutError:
                         view.disable_all_items()
-                        await msg.edit_original_response(view=view, delete_after=5)
+                        if stopType == 2:
+                            embed3 = Embed.default(timestamp=datetime.datetime.now(), title="❎ 시간 초과", description=f"시간 초과로 <@{game_data['province'][user_now_loc_num]['owner']}>님에게 통행료를 지불하였습니다.")
+                            Embed.user_footer(embed3, interaction.user)
+                            game_data["players_data"][str(interaction.user.id)]["money"] = str(int(game_data["players_data"][str(interaction.user.id)]["money"]) - game_data['province'][user_now_loc_num]["money"])
+                            game_data["players_data"][str(game_data['province'][user_now_loc_num]['owner'])]["money"] = str(int(game_data["players_data"][str(game_data['province'][user_now_loc_num]['owner'])]["money"]) + game_data['province'][user_now_loc_num]["money"])
+                            savejson(f"./data/game/{interaction.channel_id}.json", game_data)
+                            await msg.edit_original_response(embeds=[embed3], view=view, delete_after=5)
+                        else:
+                            await msg.edit_original_response(view=view, delete_after=5)
 
                 view = discord.ui.View()
                 view.add_item(
